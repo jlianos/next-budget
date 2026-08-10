@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           Int    @id @default(autoincrement())
+  email        String @unique
+  passwordHash String
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions          Transaction[]
+  transfers             Transfer[]
+  recurringTransactions RecurringTransaction[]
+}
+
+enum Currency {
+  USD
+  EUR
+}
+
+model Workspace {
+  id   String @id @default(nanoid(21))
+  name String
+
+  currency Currency @default(EUR)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wallets          Wallet[]
+  users            User[]
+  transactionTypes TransactionType[]
+}
+
+model Wallet {
+  id Int @id @default(autoincrement())
+
+  name String
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+
+  outgoingTransfers     Transfer[]             @relation("TransferFromWallet")
+  incomingTransfers     Transfer[]             @relation("TransferToWallet")
+  recurringTransactions RecurringTransaction[]
+
+  @@unique([workspaceId, name])
+}
+
+model TransactionType {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  direction Int // 1 for income, -1 for expense
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactionCategories TransactionCategory[]
+
+  @@unique([workspaceId, name])
+}
+
+model TransactionCategory {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+
+  transactionTypeId Int
+  transactionType   TransactionType @relation(fields: [transactionTypeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions          Transaction[]
+  recurringTransactions RecurringTransaction[]
+
+  @@unique([transactionTypeId, name])
+}
+
+model Transaction {
+  id Int @id @default(autoincrement())
+
+  amount Decimal
+
+  walletId Int
+  wallet   Wallet @relation(fields: [walletId], references: [id])
+
+  categoryId Int
+  category   TransactionCategory @relation(fields: [categoryId], references: [id])
+
+  createdById Int
+  createdBy   User @relation(fields: [createdById], references: [id])
+
+  occurredAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Transfer {
+  id Int @id @default(autoincrement())
+
+  amount Decimal
+
+  fromWalletId Int
+  fromWallet   Wallet @relation("TransferFromWallet", fields: [fromWalletId], references: [id])
+
+  toWalletId Int
+  toWallet   Wallet @relation("TransferToWallet", fields: [toWalletId], references: [id])
+
+  createdById Int
+  createdBy   User @relation(fields: [createdById], references: [id])
+
+  occurredAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum RecurrenceFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model RecurringTransaction {
+  id Int @id @default(autoincrement())
+
+  amount Decimal
+
+  walletId Int
+  wallet   Wallet @relation(fields: [walletId], references: [id])
+
+  categoryId Int
+  category   TransactionCategory @relation(fields: [categoryId], references: [id])
+
+  createdById Int
+  createdBy   User @relation(fields: [createdById], references: [id])
+
+  frequency RecurrenceFrequency
+
+  interval Int @default(1)
+
+  startsAt DateTime
+  endsAt   DateTime?
+  nextAt   DateTime
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

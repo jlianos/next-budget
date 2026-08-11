@@ -1,0 +1,352 @@
+# Next Steps: Expense Tracker Product Structure
+
+## Purpose
+
+Build an expense tracker that is quick and comfortable for everyday use while making the schema's more advanced features—shared workspaces, roles, multiple wallets, transfers, and recurring transactions—available without overwhelming the user.
+
+This document is the high-level product and implementation map. It is not a commitment to schema changes. Any material schema or architectural change should be reviewed and approved before implementation.
+
+## Product principles
+
+1. **Fast daily capture** — recording an expense or income should take only a few inputs and remain accessible from every main screen.
+2. **Progressive disclosure** — the default experience should be simple; workspace administration, categorization, and recurrence controls appear only when needed.
+3. **Workspace context is always visible** — users should always know which personal or shared workspace they are viewing or editing.
+4. **Money movement stays understandable** — income, expenses, and transfers are distinct concepts in the UI, matching the schema.
+5. **Useful defaults, editable detail** — remember recent wallet/category choices and default dates sensibly, while allowing full editing.
+6. **Safe collaboration** — permissions must be enforced on the server, and potentially destructive actions must be clear and deliberate.
+7. **Derived insights before extra complexity** — prioritize reports that can be calculated from the current schema before adding budgets, goals, or forecasting models.
+
+## Primary user journeys
+
+### 1. Start and orient
+
+- Sign in.
+- Enter the last-used workspace, or select one when no preference exists.
+- See current balance, this month's income and expenses, recent activity, and upcoming recurring items.
+- Switch workspaces from a persistent workspace selector.
+
+### 2. Record money quickly
+
+- Open a global **Add** action.
+- Choose **Expense**, **Income**, or **Transfer**.
+- Enter amount first, then wallet and category/destination wallet.
+- Default the date to now and the creator to the signed-in user.
+- Offer optional date/time and recurrence settings without putting them in the primary path.
+- Return the user to their prior context with immediate feedback.
+
+### 3. Review and correct activity
+
+- Browse a single chronological activity feed containing transactions and transfers.
+- Filter by date, direction, wallet, category, transaction type, or creator.
+- Open an item to inspect, edit, or delete it when permitted.
+- Clearly distinguish generated recurring transactions from manually entered items.
+
+### 4. Understand spending
+
+- Compare income and expenses over a selected period.
+- See spending grouped first by transaction type, then category.
+- Inspect wallet balances and money movement.
+- Drill from every summary into the filtered activity that produced it.
+
+### 5. Manage recurring activity
+
+- Create a recurring income or expense from the normal transaction flow.
+- Review active, paused, upcoming, and ended recurring definitions.
+- Pause, resume, edit, or end a schedule.
+- Show generated occurrences in normal activity while retaining a link to their source schedule.
+
+### 6. Collaborate in a workspace
+
+- Admins manage members, roles, wallets, transaction types, categories, and workspace settings.
+- Members record and manage financial activity according to the agreed permission policy.
+- Viewers can inspect dashboards, reports, and activity without making changes.
+- Activity identifies its creator where that context is useful.
+
+## Information architecture
+
+The application should have a small, stable primary navigation:
+
+1. **Overview** — financial summary, wallet balances, recent activity, and upcoming recurring items.
+2. **Activity** — combined transaction and transfer history with filters and search.
+3. **Reports** — income/expense trends and category/type breakdowns.
+4. **Recurring** — recurring definitions, schedule state, and next occurrence.
+5. **Settings** — workspace, wallets, categories/types, members, and personal preferences.
+
+The global **Add** action is not a navigation destination. It should remain available in the desktop header and as a prominent mobile action.
+
+### Suggested route map
+
+```text
+/
+├── login
+└── w/[workspaceId]
+    ├── overview
+    ├── activity
+    │   └── [itemKind]/[itemId]
+    ├── reports
+    ├── recurring
+    │   └── [recurringId]
+    └── settings
+        ├── workspace
+        ├── wallets
+        ├── categories
+        └── members
+```
+
+The workspace identifier in the route makes context explicit, supports direct links, and reduces the risk of reading or mutating data in the wrong workspace. `/` can redirect authenticated users to their last-used or first available workspace.
+
+## Screen structure
+
+### Application shell
+
+- Desktop: sidebar navigation, workspace selector, compact user menu, and persistent Add button.
+- Mobile: compact header, bottom navigation for the most-used destinations, and prominent Add action.
+- Shared loading, empty, error, permission-denied, and not-found states.
+- Server-rendered workspace and permission context; client components only where interaction requires them.
+
+### Overview
+
+- Period selector, defaulting to the current month.
+- Income, expenses, and net cash flow summary.
+- Wallet balance cards with total balance.
+- Spending by transaction type/category.
+- Recent combined activity.
+- Upcoming recurring transactions.
+- First-use state that guides users to create a wallet, categories, and their first transaction.
+
+### Add/edit money flow
+
+- Segmented choice: Expense, Income, Transfer.
+- Amount is the first focused field.
+- Expense/income fields: wallet, category, occurred date/time.
+- Transfer fields: source wallet, destination wallet, occurred date/time.
+- Optional recurrence section for income/expense.
+- Category options are filtered by the selected direction.
+- Validation is inline and preserves entered values.
+
+### Activity
+
+- One timeline, visually differentiating income, expense, and transfer entries.
+- Preset periods plus a custom date range.
+- Filters for wallet, direction, type, category, and creator.
+- URL-backed filters so views can be linked and revisited.
+- Pagination or cursor-based loading rather than fetching the full history.
+- Detail view or drawer with edit/delete actions based on permissions.
+
+### Reports
+
+- Income versus expenses over time.
+- Net cash flow over time.
+- Expense breakdown by transaction type and category.
+- Wallet balance and flow summary.
+- Every chart or total links to its supporting filtered activity.
+- No budgeting UI in the initial scope because the current schema has no budget contract.
+
+### Recurring
+
+- Upcoming schedule ordered by `nextAt`.
+- Active, paused, and ended groupings.
+- Frequency and interval expressed in plain language, such as “every 2 weeks.”
+- Actions to pause/resume and edit/end a schedule.
+- Generated transactions remain ordinary transaction records and link back to the recurring definition.
+
+### Settings
+
+- Workspace: name and currency.
+- Wallets: create, rename, and review balance/activity before any removal.
+- Categories: manage the two-level transaction type → category hierarchy, grouped by income/expense direction.
+- Members: invite/add workflow when implemented, role management, and clear role descriptions.
+- Personal: sign-out and future display preferences.
+
+## Schema-to-feature map
+
+| Schema capability | Product use |
+| --- | --- |
+| `User` | Authentication identity and activity creator |
+| `Workspace` | Personal/shared financial boundary and reporting currency |
+| `UserWorkspace` | Workspace membership, selection, and role-based access |
+| `Wallet` | Accounts/cash locations and derived balances |
+| `TransactionType` | High-level income/expense reporting groups |
+| `TransactionCategory` | Specific classification during entry and reporting |
+| `Transaction` | Income/expense activity, including generated recurring occurrences |
+| `Transfer` | Internal wallet movement without changing income/expense totals |
+| `RecurringTransaction` | Schedule definitions and source link for generated occurrences |
+
+## Domain rules to enforce in the application
+
+The current relational schema does not enforce all business invariants, so every server-side write path should verify them explicitly:
+
+- The acting user belongs to the workspace and has sufficient permission.
+- Wallets, categories, transaction types, recurring definitions, and edited records belong to the route's workspace.
+- A transaction category's direction matches whether the user is recording income or expense.
+- Amounts are positive and use the workspace currency's supported precision.
+- A transfer's source and destination are different and belong to the same workspace unless cross-workspace transfers are explicitly designed later.
+- Recurrence interval is a positive integer; end date does not precede start date; `nextAt` remains valid.
+- Generated recurring occurrences are idempotent for a schedule and occurrence date.
+- Deletion or reassignment cannot silently invalidate historical financial records.
+
+Authorization should never rely only on hidden buttons or client-side state. Reads and mutations must both be scoped by workspace membership on the server.
+
+## Role policy proposal
+
+This is a starting policy to approve before implementation:
+
+| Capability | Admin | Member | Viewer |
+| --- | :---: | :---: | :---: |
+| View workspace data and reports | Yes | Yes | Yes |
+| Create transactions and transfers | Yes | Yes | No |
+| Edit/delete own activity | Yes | Yes | No |
+| Edit/delete another member's activity | Yes | No | No |
+| Manage recurring definitions | Yes | Yes, own | No |
+| Manage wallets and categories | Yes | No | No |
+| Manage workspace and members | Yes | No | No |
+
+## Suggested code organization
+
+Keep route files thin and group business behavior by feature rather than putting all logic in `app`:
+
+```text
+src/
+├── app/
+│   ├── (auth)/
+│   └── (app)/w/[workspaceId]/
+├── components/
+│   ├── ui/
+│   └── app-shell/
+├── features/
+│   ├── activity/
+│   ├── auth/
+│   ├── recurring/
+│   ├── reports/
+│   ├── transactions/
+│   ├── transfers/
+│   ├── wallets/
+│   └── workspaces/
+├── db/
+├── lib/
+│   ├── auth/
+│   ├── money/
+│   └── validation/
+└── generated/
+```
+
+Feature folders can contain their queries, server actions, validation schemas, domain helpers, and components. Shared primitives should only move into `components/ui` or `lib` after they are genuinely shared.
+
+## Technical approach
+
+- Use Server Components for initial reads and page composition.
+- Keep Prisma in server-only modules and return explicit view models rather than database records directly to interactive client components.
+- Use Server Actions for form-driven application mutations; use Route Handlers only when an actual HTTP endpoint is needed.
+- Recheck authentication, role, and workspace ownership inside every action.
+- Validate all untrusted input at the server boundary.
+- Keep monetary calculations in `Prisma.Decimal` or normalized minor units; do not perform financial arithmetic with JavaScript floating-point numbers.
+- Treat dates deliberately: store instants consistently and format them in the user's timezone.
+- Revalidate the smallest relevant route/cache scope after mutations.
+- Add structured domain errors for validation, permission, conflict, and not-found states.
+
+## Delivery phases
+
+### Phase 0 — Confirm the contract
+
+- Approve the initial role policy.
+- Decide authentication/session strategy.
+- Confirm wallet balance semantics, including opening balances and credit cards.
+- Confirm same-workspace transfer rules.
+- Define recurring generation behavior and where its scheduler will run.
+- Decide archival/deletion policy for referenced wallets, categories, users, and workspaces.
+- Make approved schema adjustments and regenerate the migration before building dependent UI.
+
+### Phase 1 — Foundation and application shell
+
+- Authentication and session handling.
+- Workspace-aware authorization helpers.
+- Workspace selection and route guards.
+- Responsive application shell and common UI states.
+- Shared input validation, money formatting, and date formatting.
+
+### Phase 2 — Read-only overview
+
+- Dashboard queries scoped to a workspace.
+- Income, expense, net flow, wallet balance, recent activity, and upcoming recurring summaries.
+- Seed-backed states for both personal and household workspaces.
+- Query and calculation tests for financial summaries.
+
+### Phase 3 — Core activity management
+
+- Create, edit, and delete income/expense transactions.
+- Combined activity list, detail view, filtering, and pagination.
+- Permission checks and audit-friendly creator display.
+- Accessible forms with pending, success, validation, and error states.
+
+### Phase 4 — Wallets and transfers
+
+- Wallet management.
+- Create, edit, and delete transfers.
+- Derived wallet balances and wallet detail activity.
+- Guardrails for same-wallet and cross-workspace transfer mistakes.
+
+### Phase 5 — Reports
+
+- Period comparisons and trend views.
+- Transaction type/category breakdowns.
+- Drill-through from summaries to filtered activity.
+- Empty and low-data states that remain useful.
+
+### Phase 6 — Recurring transactions
+
+- Recurring definition management.
+- Idempotent occurrence generation.
+- Scheduler integration and failure/retry strategy.
+- Upcoming schedule UI and source links from generated transactions.
+
+### Phase 7 — Workspace administration
+
+- Workspace settings.
+- Transaction type/category management.
+- Membership and role management.
+- Safe archival or deletion flows based on the approved data-retention policy.
+
+### Phase 8 — Hardening and release readiness
+
+- Authorization and workspace-isolation tests.
+- End-to-end tests for primary user journeys.
+- Accessibility, responsive layout, and keyboard navigation review.
+- Performance review for dashboard aggregates and activity pagination.
+- Production database and deployment strategy; SQLite suitability must be reassessed for the intended hosting model and concurrency.
+- Logging, error reporting, backup, and recovery plan.
+
+## Testing priorities
+
+1. Workspace isolation and role enforcement.
+2. Correct income, expense, transfer, and wallet balance calculations.
+3. Decimal precision and currency formatting.
+4. Recurring occurrence idempotency and date boundaries.
+5. Transaction entry and editing across mobile and desktop.
+6. Filtered reports matching their underlying activity.
+7. Empty, loading, invalid-input, unauthorized, and failure states.
+
+## Decisions required before Phase 1
+
+The following choices materially affect architecture or the schema and should be approved before implementation:
+
+1. **Authentication:** custom email/password sessions using the existing `passwordHash`, or an authentication library/provider.
+2. **Wallet semantics:** whether all wallets are simple money containers or need account types, opening balances, and liability/credit-card behavior.
+3. **Role permissions:** whether members can edit only their own records and manage their own recurring definitions.
+4. **Transfers:** whether transfers are always constrained to wallets in one workspace.
+5. **Recurring execution:** request-driven catch-up, an external scheduled job, or a deployment-platform scheduler.
+6. **Deletion policy:** hard delete, archive, or prevent deletion when historical records reference an entity.
+7. **Deployment database:** keep SQLite for the first release or plan an early move to PostgreSQL before collaborative production use.
+
+## Explicitly deferred scope
+
+These features are not represented by the current schema and should not enter the initial build implicitly:
+
+- Budgets, spending limits, or savings goals.
+- Multiple currencies within one workspace or exchange-rate conversion.
+- Receipt uploads and attachments.
+- Merchant/payee tracking and free-form transaction notes.
+- Bank synchronization or CSV import/export.
+- Notifications and recurring-payment reminders.
+- Formal audit history beyond `createdBy` and timestamps.
+
+Each can be considered later through a deliberate product and schema proposal.

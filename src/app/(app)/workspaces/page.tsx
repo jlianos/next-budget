@@ -1,6 +1,6 @@
-import { signOut } from "@/features/auth/actions";
 import { requireUser } from "@/features/auth/dal";
 import { selectWorkspace } from "@/features/workspaces/actions";
+import { CopyWorkspaceIdButton } from "@/features/workspaces/components/copy-workspace-id-button";
 import { CreateWorkspaceForm } from "@/features/workspaces/components/create-workspace-form";
 import { JoinWorkspaceForm } from "@/features/workspaces/components/join-workspace-form";
 import { getPreferredWorkspace, getUserWorkspaces } from "@/features/workspaces/queries";
@@ -17,21 +17,6 @@ export default async function Home() {
   return (
     <div className="flex justify-center">
       <div className="w-full max-w-3xl space-y-8">
-        <header className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-zinc-600">Signed in as</p>
-            <h1 className="font-medium text-zinc-950">{user.email}</h1>
-          </div>
-
-          <form action={signOut}>
-            <button
-              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
-              type="submit"
-            >
-              Sign out
-            </button>
-          </form>
-        </header>
 
         <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="space-y-1">
@@ -47,17 +32,14 @@ export default async function Home() {
                 const selected = workspace.id === selectedWorkspaceId;
 
                 return (
-                  <li key={workspace.id}>
+                  <li
+                    className={`overflow-hidden rounded-xl border transition ${
+                      selected ? "border-zinc-900 bg-zinc-50 ring-2 ring-zinc-900/10" : "border-zinc-200 bg-white"
+                    }`}
+                    key={workspace.id}
+                  >
                     <form action={selectThisWorkspace}>
-                      <button
-                        aria-pressed={selected}
-                        className={`w-full rounded-xl border p-4 text-left transition ${
-                          selected
-                            ? "border-zinc-900 bg-zinc-50 ring-2 ring-zinc-900/10"
-                            : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50"
-                        }`}
-                        type="submit"
-                      >
+                      <button aria-pressed={selected} className="w-full p-4 text-left hover:bg-zinc-50" type="submit">
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <h3 className="font-medium text-zinc-950">{workspace.name}</h3>
@@ -71,6 +53,16 @@ export default async function Home() {
                         </div>
                       </button>
                     </form>
+
+                    <div className="flex items-center justify-between gap-3 border-t border-zinc-200 px-4 py-3">
+                      <code className="min-w-0 truncate text-xs text-zinc-500" title={workspace.id}>
+                        {workspace.id}
+                      </code>
+
+                      <div className="shrink-0">
+                        <CopyWorkspaceIdButton workspaceId={workspace.id} />
+                      </div>
+                    </div>
                   </li>
                 );
               })}

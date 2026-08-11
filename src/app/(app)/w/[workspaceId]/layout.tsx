@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { AppShell } from "@/components/app-shell/app-shell";
 import { requireUser } from "@/features/auth/dal";
-import { getUserWorkspaces } from "@/features/workspaces/queries";
+import { getWorkspaceMembership } from "@/features/workspaces/queries";
 
 type WorkspaceLayoutProps = {
   children: ReactNode;
@@ -11,16 +12,26 @@ type WorkspaceLayoutProps = {
   }>;
 };
 
-export default async function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {
+export default async function WorkspaceLayout({
+  children,
+  params,
+}: WorkspaceLayoutProps) {
   const user = await requireUser();
   const { workspaceId } = await params;
-  const memberships = await getUserWorkspaces(user.id);
-
-  const membership = memberships.find(({ workspace }) => workspace.id === workspaceId);
+  const membership = await getWorkspaceMembership(user.id, workspaceId);
 
   if (!membership) {
     notFound();
   }
 
-  return children;
+  const selectedWorkspace = {
+    ...membership.workspace,
+    role: membership.role,
+  };
+
+  return (
+    <AppShell selectedWorkspace={selectedWorkspace} userEmail={user.email}>
+      {children}
+    </AppShell>
+  );
 }

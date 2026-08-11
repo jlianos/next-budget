@@ -8,10 +8,13 @@ This is the working checklist for the application. Product direction, architectu
 
 ### Read-only workspace overview
 
-- [ ] Define the workspace overview query result shape.
+- [x] Define the initial workspace overview query result shape.
 - [ ] Build workspace-scoped dashboard queries.
-- [ ] Show current-period income, expenses, and net cash flow.
-- [ ] Calculate and display wallet balances.
+- [x] Add URL-backed `from` and `to` controls that default to the current month.
+- [x] Show selected-period income, expenses, and net cash flow.
+- [x] Calculate and display all-time wallet balances.
+- [x] Calculate selected-period expense totals by category for the upcoming chart.
+- [ ] Display the expense-by-category chart.
 - [ ] Show recent transaction and transfer activity.
 - [ ] Show upcoming recurring transactions.
 - [ ] Add useful overview loading and empty states.
@@ -20,7 +23,7 @@ This is the working checklist for the application. Product direction, architectu
 ### Foundation follow-up
 
 - [ ] Add authentication and authorization tests.
-- [ ] Make workspace IDs easy to copy and share.
+- [x] Make workspace IDs easy to copy and share.
 - [ ] Remove duplicated workspace-page user controls now provided by the app shell.
 
 ## Decisions needed soon
@@ -29,7 +32,7 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Choose custom email/password sessions or an authentication library/provider.
 - [ ] Confirm whether members may edit only their own activity and recurring definitions.
 - [ ] Confirm that transfers must stay within one workspace.
-- [ ] Decide how opening balances and credit-card/liability wallets should behave.
+- [x] Adopt simple version-one wallet balances; defer opening balances and explicit liability/credit-card behavior.
 - [ ] Choose the recurring transaction execution strategy.
 - [ ] Choose archive/delete behavior for referenced financial entities.
 - [ ] Confirm whether SQLite is only for local development or also intended for the first deployment.
@@ -60,6 +63,7 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Add workspace creation, selection, and join-by-ID flows.
 - [x] Build the responsive desktop and mobile application shell.
 - [x] Add workspace navigation and signed-in user controls.
+- [x] Make route workspace context authoritative for workspace-scoped shells.
 - [ ] Add persistent desktop and mobile Add actions.
 - [ ] Create shared loading, empty, error, permission-denied, and not-found states.
 - [ ] Add shared input validation, money formatting, and date formatting.
@@ -67,8 +71,9 @@ This is the working checklist for the application. Product direction, architectu
 ### Phase 2 — Read-only overview
 
 - [ ] Build workspace-scoped dashboard queries.
-- [ ] Show current-period income, expenses, and net cash flow.
-- [ ] Calculate and display wallet balances.
+- [x] Add a URL-backed date range that defaults to the current month.
+- [x] Show selected-period income, expenses, and net cash flow.
+- [x] Calculate and display wallet balances.
 - [ ] Show spending grouped by transaction type and category.
 - [ ] Show recent combined transaction and transfer activity.
 - [ ] Show upcoming recurring transactions.
@@ -166,3 +171,9 @@ Items in this section should move into the roadmap only after an approved produc
 - **2026-08-11:** Implemented per-user workspace preference cookies, automatic workspace resolution, membership route guards, and workspace selection.
 - **2026-08-11:** Implemented workspace creation and join-by-workspace-ID flows without automatic workspace creation during sign-up.
 - **2026-08-11:** Completed a successful Next.js production build after the workspace access flow.
+- **2026-08-11:** Made the route workspace authoritative for membership checks, shell identity, and workspace navigation while keeping the cookie as the explicit workspace preference.
+- **2026-08-11:** Added Day.js UTC date normalization and URL-backed `from`/`to` overview controls that default to the current month.
+- **2026-08-11:** Added and manually verified workspace-scoped income, expense, and net cash-flow cards for selected periods.
+- **2026-08-11:** Added and manually verified all-time wallet balances, including incoming and outgoing transfers, for the personal and household seed workspaces.
+- **2026-08-11:** Avoided Prisma SQLite `groupBy` Decimal sums after verification showed fractional values could be truncated; wallet calculations now use exact per-wallet aggregates.
+- **2026-08-11:** Added exact selected-period expense totals by category as the data source for the next overview chart step.

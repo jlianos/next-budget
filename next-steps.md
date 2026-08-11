@@ -106,10 +106,11 @@ The workspace identifier in the route makes context explicit, supports direct li
 
 ### Overview
 
-- Period selector, defaulting to the current month.
+- URL-backed `from` and `to` date controls, defaulting to the current month.
+- Dates are displayed as inclusive calendar dates; database queries use an inclusive start and exclusive end boundary.
 - Income, expenses, and net cash flow summary.
-- Wallet balance cards with total balance.
-- Spending by transaction type/category.
+- Wallet balance cards calculated from all recorded activity, independent of the selected period.
+- Spending by transaction type/category, beginning with an expense-by-category horizontal bar chart.
 - Recent combined activity.
 - Upcoming recurring transactions.
 - First-use state that guides users to create a wallet, categories, and their first transaction.
@@ -216,6 +217,7 @@ src/
 ├── features/
 │   ├── activity/
 │   ├── auth/
+│   ├── overview/
 │   ├── recurring/
 │   ├── reports/
 │   ├── transactions/
@@ -224,7 +226,7 @@ src/
 │   └── workspaces/
 ├── db/
 ├── lib/
-│   ├── auth/
+│   ├── dates.ts
 │   ├── money/
 │   └── validation/
 └── generated/
@@ -240,7 +242,10 @@ Feature folders can contain their queries, server actions, validation schemas, d
 - Recheck authentication, role, and workspace ownership inside every action.
 - Validate all untrusted input at the server boundary.
 - Keep monetary calculations in `Prisma.Decimal` or normalized minor units; do not perform financial arithmetic with JavaScript floating-point numbers.
-- Treat dates deliberately: store instants consistently and format them in the user's timezone.
+- Use Day.js for date normalization and formatting. The initial overview uses UTC calendar boundaries until user timezone preferences are designed.
+- Keep URL dates in `YYYY-MM-DD` form. Treat `from` as inclusive and convert the inclusive `to` date to an exclusive next-day database boundary.
+- Treat the route `workspaceId` as the active workspace context. The per-user cookie is a preference for `/` redirects and explicit workspace selection, not authority over a workspace route.
+- Do not rely on Prisma SQLite `groupBy` Decimal sums without verification; fractional values were observed to truncate. Prefer exact `aggregate` queries or `Prisma.Decimal` application-side totals where needed.
 - Revalidate the smallest relevant route/cache scope after mutations.
 - Add structured domain errors for validation, permission, conflict, and not-found states.
 
@@ -267,9 +272,12 @@ Feature folders can contain their queries, server actions, validation schemas, d
 ### Phase 2 — Read-only overview
 
 - Dashboard queries scoped to a workspace.
-- Income, expense, net flow, wallet balance, recent activity, and upcoming recurring summaries.
+- URL-backed selected periods that default to the current month.
+- Income, expense, net flow, wallet balance, expense-category, recent activity, and upcoming recurring summaries.
 - Seed-backed states for both personal and household workspaces.
 - Query and calculation tests for financial summaries.
+
+Current status: selected-period income, expenses, and net cash flow are displayed; all-time wallet balances are displayed; and exact expense-category totals are prepared for the chart. The next implementation step is the expense-by-category visualization, followed by recent activity and upcoming recurring items.
 
 ### Phase 3 — Core activity management
 
@@ -325,12 +333,12 @@ Feature folders can contain their queries, server actions, validation schemas, d
 6. Filtered reports matching their underlying activity.
 7. Empty, loading, invalid-input, unauthorized, and failure states.
 
-## Decisions required before Phase 1
+## Decisions still required
 
 The following choices materially affect architecture or the schema and should be approved before implementation:
 
-1. **Authentication:** custom email/password sessions using the existing `passwordHash`, or an authentication library/provider.
-2. **Wallet semantics:** whether all wallets are simple money containers or need account types, opening balances, and liability/credit-card behavior.
+1. **Authentication:** resolved in favor of custom email/password sessions using the existing `passwordHash`.
+2. **Wallet semantics:** version 1 treats wallets as simple money containers with balances derived as income minus expenses plus incoming transfers minus outgoing transfers. Opening balances and explicit liability/credit-card behavior remain undecided.
 3. **Role permissions:** whether members can edit only their own records and manage their own recurring definitions.
 4. **Transfers:** whether transfers are always constrained to wallets in one workspace.
 5. **Recurring execution:** request-driven catch-up, an external scheduled job, or a deployment-platform scheduler.

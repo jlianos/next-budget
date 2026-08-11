@@ -33,7 +33,32 @@ export const getPreferredWorkspace = cache(async (userId: number) => {
     getSelectedWorkspaceId(userId),
   ]);
 
-  const selectedMembership = memberships.find(({ workspace }) => workspace.id === selectedWorkspaceId);
+  const selectedMembership = memberships.find(
+    ({ workspace }) => workspace.id === selectedWorkspaceId,
+  );
 
   return selectedMembership ?? memberships[0] ?? null;
 });
+
+export const getWorkspaceMembership = cache(
+  (userId: number, workspaceId: string) => {
+    return prisma.userWorkspace.findUnique({
+      where: {
+        userId_workspaceId: {
+          userId,
+          workspaceId,
+        },
+      },
+      select: {
+        role: true,
+        workspace: {
+          select: {
+            id: true,
+            name: true,
+            currency: true,
+          },
+        },
+      },
+    });
+  },
+);

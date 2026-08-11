@@ -32,8 +32,19 @@ The user can explicitly ask Codex to implement a change directly instead of foll
 - Validate all untrusted form data on the server with Valibot.
 - Authenticate inside every sensitive Server Action, even when its form appears only on a protected page.
 - Verify workspace membership for every workspace-scoped read or mutation.
+- Treat the `workspaceId` in a workspace route as the active context. Use the per-user workspace cookie only as an explicit selection preference and for `/` redirects.
 - Use Prisma constraints and operations such as composite keys, nested writes, and `upsert` to keep mutations safe and repeatable.
+- Keep financial calculations in `Prisma.Decimal`; converting to `number` is permitted only for display formatting or non-financial presentation decisions.
+- With the current Prisma SQLite adapter, do not use `groupBy` Decimal sums unless their fractional behavior has been verified. Exact aggregates or `Prisma.Decimal` application-side totals are preferred.
 - Return small form-state objects containing only the errors or messages the UI needs.
+
+## Date conventions
+
+- Use Day.js for shared date normalization and formatting.
+- Keep date-only URL values in `YYYY-MM-DD` form.
+- Overview `from` and `to` values are inclusive for the user and default to the current UTC month.
+- Convert the inclusive `to` value to the start of the following day and query with `occurredAt >= start` and `occurredAt < endExclusive`.
+- Revisit UTC calendar boundaries when user timezone preferences are introduced.
 
 ## Next.js conventions
 

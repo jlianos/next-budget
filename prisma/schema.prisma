@@ -12,12 +12,10 @@ model User {
   email        String @unique
   passwordHash String
 
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  workspaces            UserWorkspace[]
   transactions          Transaction[]
   transfers             Transfer[]
   recurringTransactions RecurringTransaction[]
@@ -38,8 +36,28 @@ model Workspace {
   updatedAt DateTime @updatedAt
 
   wallets          Wallet[]
-  users            User[]
+  users            UserWorkspace[]
   transactionTypes TransactionType[]
+}
+
+enum WorkspaceRole {
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+model UserWorkspace {
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  role WorkspaceRole @default(MEMBER)
+
+  createdAt DateTime @default(now())
+
+  @@id([userId, workspaceId])
 }
 
 model Wallet {
@@ -62,11 +80,16 @@ model Wallet {
   @@unique([workspaceId, name])
 }
 
+enum TransactionDirection {
+  INCOME
+  EXPENSE
+}
+
 model TransactionType {
   id   Int    @id @default(autoincrement())
   name String
 
-  direction Int // 1 for income, -1 for expense
+  direction TransactionDirection
 
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
@@ -110,10 +133,17 @@ model Transaction {
   createdById Int
   createdBy   User @relation(fields: [createdById], references: [id])
 
+  recurringTransactionId Int?
+  recurringTransaction   RecurringTransaction? @relation(fields: [recurringTransactionId], references: [id])
+
   occurredAt DateTime
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([recurringTransactionId, occurredAt])
+  @@index([walletId, occurredAt])
+  @@index([categoryId, occurredAt])
 }
 
 model Transfer {
@@ -134,6 +164,9 @@ model Transfer {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([fromWalletId, occurredAt])
+  @@index([toWalletId, occurredAt])
 }
 
 enum RecurrenceFrequency {
@@ -169,4 +202,9 @@ model RecurringTransaction {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+
+  @@index([walletId])
+  @@index([isActive, nextAt])
 }

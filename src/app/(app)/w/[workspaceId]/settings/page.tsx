@@ -27,11 +27,14 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
           <p className="mt-2 text-sm text-zinc-600">Review balances and manage workspace wallets.</p>
         </Link>
 
-        <section className="rounded-2xl border border-zinc-200 bg-white p-5 opacity-60 shadow-sm">
+        <Link
+          className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-zinc-300 hover:shadow"
+          href={`/w/${workspaceId}/settings/categories`}
+        >
           <h2 className="font-semibold text-zinc-950">Transaction categories</h2>
 
-          <p className="mt-2 text-sm text-zinc-600">Coming later.</p>
-        </section>
+          <p className="mt-2 text-sm text-zinc-600">Manage income and expense types and their categories.</p>
+        </Link>
 
         <section className="rounded-2xl border border-zinc-200 bg-white p-5 opacity-60 shadow-sm">
           <h2 className="font-semibold text-zinc-950">Members</h2>

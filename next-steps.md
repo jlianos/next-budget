@@ -292,7 +292,7 @@ Current status: the overview displays selected-period income, expenses, net cash
 - Derived wallet balances and wallet detail activity.
 - Guardrails for same-wallet and cross-workspace transfer mistakes.
 
-Current status: transfer creation, editing, and deletion are complete. Wallet management now supports balance/reference review, role-protected creation and renaming, workspace-unique names, and deletion only for unreferenced wallets. Dedicated wallet detail views remain optional follow-up work; transaction type and category management is the next V1 usability priority.
+Current status: transfer creation, editing, and deletion are complete. Wallet management now supports balance/reference review, role-protected creation and renaming, workspace-unique names, and deletion only for unreferenced wallets. Dedicated wallet detail views remain optional follow-up work.
 
 ### Phase 5 — Reports
 
@@ -314,6 +314,8 @@ Current status: transfer creation, editing, and deletion are complete. Wallet ma
 - Transaction type/category management.
 - Membership and role management.
 - Safe archival or deletion flows based on the approved data-retention policy.
+
+Current status: transaction type and category management is complete. Types have immutable Income/Expense directions, categories remain under their original type, names follow the schema's scoped uniqueness rules, and hard deletion is limited to unreferenced categories and empty types. Workspace and membership management remain.
 
 ### Phase 8 — Hardening and release readiness
 
@@ -343,7 +345,7 @@ The following choices materially affect architecture or the schema and should be
 3. **Role permissions:** resolved for version 1: `ADMIN` and `MEMBER` have the same management rights; `VIEWER` is read-only. The separate admin role is retained for possible future policy changes.
 4. **Transfers:** resolved for version 1: both wallets must belong to the route workspace, and source and destination must be different.
 5. **Recurring execution:** request-driven catch-up, an external scheduled job, or a deployment-platform scheduler.
-6. **Deletion policy:** version-one activity records use explicit-confirmation hard deletion for `ADMIN` and `MEMBER`; `VIEWER` remains read-only. Generated recurring occurrences may be deleted without deleting their recurring definition and may be recreated by future scheduler catch-up behavior. Wallets use hard deletion only when no transaction, transfer, or recurring definition references them. Policy for other referenced configuration entities remains undecided.
+6. **Deletion policy:** version-one activity records use explicit-confirmation hard deletion for `ADMIN` and `MEMBER`; `VIEWER` remains read-only. Generated recurring occurrences may be deleted without deleting their recurring definition and may be recreated by future scheduler catch-up behavior. Wallets and categories can be hard-deleted only when unreferenced; transaction types can be hard-deleted only when empty. Workspace membership and workspace deletion policy remains undecided.
 7. **Deployment database:** keep SQLite for the first release or plan an early move to PostgreSQL before collaborative production use.
 
 ## Explicitly deferred scope

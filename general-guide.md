@@ -37,6 +37,7 @@ The user can explicitly ask Codex to implement a change directly instead of foll
 - Keep financial calculations in `Prisma.Decimal`; converting to `number` is permitted only for display formatting or non-financial presentation decisions.
 - With the current Prisma SQLite adapter, do not use `groupBy` Decimal sums unless their fractional behavior has been verified. Exact aggregates or `Prisma.Decimal` application-side totals are preferred.
 - Return small form-state objects containing only the errors or messages the UI needs.
+- Keep hierarchy fields that change historical meaning immutable in V1: transaction-type direction and a category's parent type do not change after creation.
 
 ## Date conventions
 

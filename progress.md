@@ -6,23 +6,26 @@ This is the working checklist for the application. Product direction, architectu
 
 ## Current focus
 
-### Wallet management
+### Transaction type and category management
 
-- [x] Add a workspace-scoped wallet settings page.
-- [x] Show derived balances and activity-reference counts.
-- [x] Allow `ADMIN` and `MEMBER` users to create and rename wallets.
-- [x] Keep wallet names unique within a workspace.
-- [x] Allow hard deletion only for wallets with no transaction, transfer, or recurring references.
-- [x] Use an explicit styled confirmation dialog for wallet deletion.
+- [x] Define the V1 hierarchy and immutable direction/parent rules.
+- [x] Build the workspace-scoped settings query and Income/Expense grouped screen.
+- [x] Allow `ADMIN` and `MEMBER` users to create and rename transaction types.
+- [x] Allow `ADMIN` and `MEMBER` users to create and edit categories and optional descriptions.
+- [x] Enforce workspace-unique type names and type-local category names.
+- [x] Allow category deletion only when no transaction or recurring definition references it.
+- [x] Allow transaction-type deletion only after all of its categories are removed.
+- [x] Use explicit styled confirmation dialogs for destructive actions.
 - [x] Keep `VIEWER` access read-only in both the UI and Server Actions.
-- [x] Manually verify create, rename, duplicate-name validation, confirmation cancellation, and deletion.
+- [x] Manually verify creation, editing, duplicate validation, confirmation cancellation, and safe deletion.
 
-### Next focus: transaction types and categories
+### Next focus: reports
 
-- [ ] Define the smallest useful V1 management rules for transaction types and categories.
-- [ ] Build workspace-scoped settings queries and screens.
-- [ ] Add role-protected create and rename actions.
-- [ ] Prevent deletion when financial or recurring records still reference an item.
+- [ ] Define the smallest useful V1 report set and period behavior.
+- [ ] Reuse the Athens-calendar URL date range.
+- [ ] Add income, expense, and net cash-flow trends.
+- [ ] Add expense breakdowns by transaction type and category.
+- [ ] Add useful empty and low-data states.
 
 ### Read-only workspace overview
 
@@ -52,7 +55,7 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Confirm that transfers must stay within one workspace.
 - [x] Adopt simple version-one wallet balances; defer opening balances and explicit liability/credit-card behavior.
 - [ ] Choose the recurring transaction execution strategy.
-- [ ] Choose archive/delete behavior for referenced configuration entities other than wallets.
+- [ ] Choose archive/delete behavior for workspace membership and the workspace itself.
 - [ ] Confirm whether SQLite is only for local development or also intended for the first deployment.
 
 ## Completed foundation
@@ -147,7 +150,7 @@ This is the working checklist for the application. Product direction, architectu
 ### Phase 7 — Workspace administration
 
 - [ ] Build workspace settings.
-- [ ] Build transaction type and category management.
+- [x] Build transaction type and category management.
 - [ ] Build membership and role management.
 - [ ] Enforce the approved role policy in reads and writes.
 - [ ] Implement the approved archive/delete behavior.
@@ -217,3 +220,5 @@ Items in this section should move into the roadmap only after an approved produc
 - **2026-08-12:** Deferred Activity pagination for version 1; the combined timeline remains capped at 25 items.
 - **2026-08-12:** Implemented and manually verified workspace-scoped wallet management with balances, reference counts, role-protected create/rename actions, duplicate-name handling, and deletion limited to unreferenced wallets through a styled confirmation dialog.
 - **2026-08-12:** Passed TypeScript, Biome lint, and the Next.js production build after completing wallet management.
+- **2026-08-12:** Implemented and manually verified workspace-scoped transaction type and category management, including immutable type directions and category parents, optional descriptions, role-protected creation/editing, scoped uniqueness handling, reference counts, and transactional safe deletion.
+- **2026-08-12:** Passed TypeScript, Biome lint, and the Next.js production build after completing transaction type and category management.

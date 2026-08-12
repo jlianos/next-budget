@@ -28,7 +28,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
-,     "src/features/workspaces/components"  ],
+    "**/*.mts",
+    "src/features/workspaces/components"
+  ],
   "exclude": ["node_modules"]
 }

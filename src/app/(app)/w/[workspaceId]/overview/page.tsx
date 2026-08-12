@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/features/auth/dal";
 import { getOverviewSummary } from "@/features/overview/queries";
-import { getOverviewDateRange } from "@/lib/dates";
+import { formatDateTime, getDateRange } from "@/lib/dates";
+import { formatMoney } from "@/lib/money";
 
 type OverviewPageProps = {
   params: Promise<{
@@ -17,17 +18,23 @@ function getFirstValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function formatMoney(amount: string, currency: string) {
-  return new Intl.NumberFormat("en", {
-    style: "currency",
-    currency,
-  }).format(Number(amount));
+function formatRecurrence(frequency: string, interval: number) {
+  const units: Record<string, string> = {
+    DAILY: "day",
+    WEEKLY: "week",
+    MONTHLY: "month",
+    YEARLY: "year",
+  };
+
+  const unit = units[frequency] ?? "period";
+
+  return interval === 1 ? `Every ${unit}` : `Every ${interval} ${unit}s`;
 }
 
 export default async function OverviewPage({ params, searchParams }: OverviewPageProps) {
   const [user, { workspaceId }, query] = await Promise.all([requireUser(), params, searchParams]);
 
-  const dateRange = getOverviewDateRange(getFirstValue(query.from), getFirstValue(query.to));
+  const dateRange = getDateRange(getFirstValue(query.from), getFirstValue(query.to));
 
   const summary = await getOverviewSummary({
     userId: user.id,
@@ -139,6 +146,172 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
             <p className="font-medium text-zinc-950">No wallets yet</p>
 
             <p className="mt-1 text-sm text-zinc-600">Create a wallet to begin tracking balances.</p>
+          </div>
+        )}
+      </section>
+
+      <section aria-labelledby="expense-categories-heading" className="space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight" id="expense-categories-heading">
+            Expenses by category
+          </h2>
+
+          <p className="mt-1 text-sm text-zinc-600">Spending during the selected period.</p>
+        </div>
+
+        {summary.expenseCategories.length > 0 ? (
+          <ul className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+            {summary.expenseCategories.map((category) => {
+              const totalExpenses = Number(summary.expenses);
+
+              const percentage = totalExpenses > 0 ? (Number(category.amount) / totalExpenses) * 100 : 0;
+
+              const normalizedPercentage = Math.min(100, Math.max(0, percentage));
+
+              return (
+                <li key={category.id}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-medium text-zinc-950">{category.name}</p>
+
+                      <p className="mt-0.5 text-xs text-zinc-500">{category.typeName}</p>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="font-medium text-zinc-950">{formatMoney(category.amount, summary.currency)}</p>
+
+                      <p className="mt-0.5 text-xs text-zinc-500">{normalizedPercentage.toFixed(1)}%</p>
+                    </div>
+                  </div>
+
+                  <div
+                    aria-label={`${category.name}: ${normalizedPercentage.toFixed(1)}% of expenses`}
+                    className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-100"
+                    role="img"
+                  >
+                    <div
+                      className="h-full rounded-full bg-red-500"
+                      style={{
+                        width: `${normalizedPercentage}%`,
+                      }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-6 text-center">
+            <p className="font-medium text-zinc-950">No expenses in this period</p>
+
+            <p className="mt-1 text-sm text-zinc-600">Try selecting another date range.</p>
+          </div>
+        )}
+      </section>
+
+      <section aria-labelledby="recent-activity-heading" className="space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight" id="recent-activity-heading">
+            Recent activity
+          </h2>
+
+          <p className="mt-1 text-sm text-zinc-600">Latest transactions and transfers during the selected period.</p>
+        </div>
+
+        {summary.recentActivity.length > 0 ? (
+          <ul className="divide-y divide-zinc-200 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+            {summary.recentActivity.map((activity) => {
+              const income = activity.kind === "transaction" && activity.direction === "INCOME";
+
+              const expense = activity.kind === "transaction" && activity.direction === "EXPENSE";
+
+              const amountPrefix = income ? "+" : expense ? "−" : "";
+
+              const amountClassName = income ? "text-emerald-700" : expense ? "text-red-700" : "text-zinc-950";
+
+              return (
+                <li className="flex items-start justify-between gap-4 p-4" key={`${activity.kind}-${activity.id}`}>
+                  <div className="min-w-0">
+                    <p className="font-medium text-zinc-950">
+                      {activity.kind === "transaction" ? activity.categoryName : "Transfer"}
+                    </p>
+
+                    <p className="mt-1 truncate text-sm text-zinc-500">
+                      {activity.kind === "transaction"
+                        ? activity.walletName
+                        : `${activity.fromWalletName} → ${activity.toWalletName}`}
+                    </p>
+
+                    <p className="mt-1 text-xs text-zinc-500">
+                      <time dateTime={activity.occurredAt}>{formatDateTime(activity.occurredAt)}</time>
+
+                      {" · "}
+                      {activity.createdByEmail}
+
+                      {activity.kind === "transaction" && activity.recurring && " · Recurring"}
+                    </p>
+                  </div>
+
+                  <p className={`shrink-0 font-semibold ${amountClassName}`}>
+                    {amountPrefix}
+                    {formatMoney(activity.amount, summary.currency)}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-6 text-center">
+            <p className="font-medium text-zinc-950">No activity in this period</p>
+
+            <p className="mt-1 text-sm text-zinc-600">Try selecting another date range.</p>
+          </div>
+        )}
+      </section>
+
+      <section aria-labelledby="upcoming-recurring-heading" className="space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight" id="upcoming-recurring-heading">
+            Upcoming recurring
+          </h2>
+
+          <p className="mt-1 text-sm text-zinc-600">Your next scheduled income and expenses.</p>
+        </div>
+
+        {summary.upcomingRecurring.length > 0 ? (
+          <ul className="divide-y divide-zinc-200 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+            {summary.upcomingRecurring.map((item) => {
+              const income = item.direction === "INCOME";
+
+              return (
+                <li className="flex items-start justify-between gap-4 p-4" key={item.id}>
+                  <div className="min-w-0">
+                    <p className="font-medium text-zinc-950">{item.categoryName}</p>
+
+                    <p className="mt-1 text-sm text-zinc-500">
+                      {item.walletName}
+                      {" · "}
+                      {formatRecurrence(item.frequency, item.interval)}
+                    </p>
+
+                    <p className="mt-1 text-xs text-zinc-500">
+                      Next: <time dateTime={item.nextAt}>{formatDateTime(item.nextAt)}</time>
+                    </p>
+                  </div>
+
+                  <p className={`shrink-0 font-semibold ${income ? "text-emerald-700" : "text-red-700"}`}>
+                    {income ? "+" : "−"}
+                    {formatMoney(item.amount, summary.currency)}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-6 text-center">
+            <p className="font-medium text-zinc-950">No upcoming recurring items</p>
+
+            <p className="mt-1 text-sm text-zinc-600">Scheduled income and expenses will appear here.</p>
           </div>
         )}
       </section>

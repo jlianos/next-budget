@@ -8,9 +8,7 @@ type WorkspacesLayoutProps = {
   children: ReactNode;
 };
 
-export default async function WorkspacesLayout({
-  children,
-}: WorkspacesLayoutProps) {
+export default async function WorkspacesLayout({ children }: WorkspacesLayoutProps) {
   const user = await requireUser();
   const preferredMembership = await getPreferredWorkspace(user.id);
 

@@ -1,0 +1,199 @@
+"use client";
+
+import { useActionState } from "react";
+
+import { FormErrors } from "@/components/forms/form-errors";
+
+import { createTransaction, updateTransaction } from "../actions";
+import { initialTransactionFormState } from "../validation";
+
+type TransactionTypeOption = {
+  id: number;
+  name: string;
+  direction: "INCOME" | "EXPENSE";
+  transactionCategories: {
+    id: number;
+    name: string;
+  }[];
+};
+
+type TransactionFormProps = {
+  workspaceId: string;
+  currency: string;
+  defaultOccurredAt: string;
+  wallets: {
+    id: number;
+    name: string;
+  }[];
+  transactionTypes: TransactionTypeOption[];
+  transaction?: {
+    id: number;
+    amount: string;
+    walletId: number;
+    categoryId: number;
+    occurredAt: string;
+  };
+};
+export function TransactionForm({
+  workspaceId,
+  currency,
+  defaultOccurredAt,
+  wallets,
+  transactionTypes,
+  transaction,
+}: TransactionFormProps) {
+  const transactionAction = transaction
+    ? updateTransaction.bind(null, workspaceId, transaction.id.toString())
+    : createTransaction.bind(null, workspaceId);
+
+  const [state, formAction, pending] = useActionState(transactionAction, initialTransactionFormState);
+
+  const amountErrors = state.fieldErrors?.amount;
+  const walletErrors = state.fieldErrors?.walletId;
+  const categoryErrors = state.fieldErrors?.categoryId;
+  const dateErrors = state.fieldErrors?.occurredAt;
+
+  const hasCategories = transactionTypes.some((type) => type.transactionCategories.length > 0);
+
+  const formAvailable = wallets.length > 0 && hasCategories;
+
+  return (
+    <form action={formAction} className="space-y-5">
+      <div className="space-y-2">
+        <label className="text-sm font-medium" htmlFor="transactionAmount">
+          Amount ({currency})
+        </label>
+
+        <input
+          aria-describedby={amountErrors ? "transaction-amount-errors" : undefined}
+          aria-invalid={Boolean(amountErrors)}
+          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10"
+          id="transactionAmount"
+          inputMode="decimal"
+          max="999999999999.99"
+          min="0.01"
+          name="amount"
+          placeholder="0.00"
+          required
+          step="0.01"
+          type="number"
+          defaultValue={transaction?.amount}
+        />
+
+        <FormErrors errors={amountErrors} id="transaction-amount-errors" />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium" htmlFor="transactionWallet">
+          Wallet
+        </label>
+
+        <select
+          aria-describedby={walletErrors ? "transaction-wallet-errors" : undefined}
+          aria-invalid={Boolean(walletErrors)}
+          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10"
+          defaultValue={transaction?.walletId.toString() ?? ""}
+          id="transactionWallet"
+          name="walletId"
+          required
+        >
+          <option disabled value="">
+            Select a wallet
+          </option>
+
+          {wallets.map((wallet) => (
+            <option key={wallet.id} value={wallet.id}>
+              {wallet.name}
+            </option>
+          ))}
+        </select>
+
+        <FormErrors errors={walletErrors} id="transaction-wallet-errors" />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium" htmlFor="transactionCategory">
+          Category
+        </label>
+
+        <select
+          aria-describedby={categoryErrors ? "transaction-category-errors" : undefined}
+          aria-invalid={Boolean(categoryErrors)}
+          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10"
+          defaultValue={transaction?.categoryId.toString() ?? ""}
+          id="transactionCategory"
+          name="categoryId"
+          required
+        >
+          <option disabled value="">
+            Select a category
+          </option>
+
+          {transactionTypes.map((type) => (
+            <optgroup key={type.id} label={`${type.direction === "INCOME" ? "Income" : "Expense"} · ${type.name}`}>
+              {type.transactionCategories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+
+        <FormErrors errors={categoryErrors} id="transaction-category-errors" />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium" htmlFor="transactionDate">
+          Date and time
+        </label>
+
+        <input
+          aria-describedby={dateErrors ? "transaction-date-errors" : undefined}
+          aria-invalid={Boolean(dateErrors)}
+          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10"
+          defaultValue={transaction?.occurredAt ?? defaultOccurredAt}
+          id="transactionDate"
+          name="occurredAt"
+          required
+          type="datetime-local"
+          step={60}
+        />
+
+        <FormErrors errors={dateErrors} id="transaction-date-errors" />
+      </div>
+
+      {!formAvailable && (
+        <p className="text-sm text-amber-700">
+          This workspace needs at least one wallet and category before you can record a transaction.
+        </p>
+      )}
+
+      {state.formError && (
+        <p aria-live="polite" className="text-sm text-red-600" role="alert">
+          {state.formError}
+        </p>
+      )}
+
+      {state.successMessage && (
+        <p aria-live="polite" className="text-sm text-green-700">
+          {state.successMessage}
+        </p>
+      )}
+
+      <button
+        className="rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={pending || !formAvailable}
+        type="submit"
+      >
+        {pending
+          ? transaction
+            ? "Updating transaction…"
+            : "Saving transaction…"
+          : transaction
+            ? "Update transaction"
+            : "Save transaction"}
+      </button>
+    </form>
+  );
+}

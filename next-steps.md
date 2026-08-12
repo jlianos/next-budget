@@ -57,8 +57,7 @@ This document is the high-level product and implementation map. It is not a comm
 
 ### 6. Collaborate in a workspace
 
-- Admins manage members, roles, wallets, transaction types, categories, and workspace settings.
-- Members record and manage financial activity according to the agreed permission policy.
+- Admins and members have the same management rights in version 1, including financial activity and workspace configuration.
 - Viewers can inspect dashboards, reports, and activity without making changes.
 - Activity identifies its creator where that context is useful.
 
@@ -197,10 +196,10 @@ This is a starting policy to approve before implementation:
 | View workspace data and reports | Yes | Yes | Yes |
 | Create transactions and transfers | Yes | Yes | No |
 | Edit/delete own activity | Yes | Yes | No |
-| Edit/delete another member's activity | Yes | No | No |
-| Manage recurring definitions | Yes | Yes, own | No |
-| Manage wallets and categories | Yes | No | No |
-| Manage workspace and members | Yes | No | No |
+| Edit/delete another member's activity | Yes | Yes | No |
+| Manage recurring definitions | Yes | Yes | No |
+| Manage wallets and categories | Yes | Yes | No |
+| Manage workspace and members | Yes | Yes | No |
 
 ## Suggested code organization
 
@@ -339,10 +338,10 @@ The following choices materially affect architecture or the schema and should be
 
 1. **Authentication:** resolved in favor of custom email/password sessions using the existing `passwordHash`.
 2. **Wallet semantics:** version 1 treats wallets as simple money containers with balances derived as income minus expenses plus incoming transfers minus outgoing transfers. Opening balances and explicit liability/credit-card behavior remain undecided.
-3. **Role permissions:** whether members can edit only their own records and manage their own recurring definitions.
+3. **Role permissions:** resolved for version 1: `ADMIN` and `MEMBER` have the same management rights; `VIEWER` is read-only. The separate admin role is retained for possible future policy changes.
 4. **Transfers:** whether transfers are always constrained to wallets in one workspace.
 5. **Recurring execution:** request-driven catch-up, an external scheduled job, or a deployment-platform scheduler.
-6. **Deletion policy:** hard delete, archive, or prevent deletion when historical records reference an entity.
+6. **Deletion policy:** version-one activity records use explicit-confirmation hard deletion for `ADMIN` and `MEMBER`; `VIEWER` remains read-only. Generated recurring occurrences may be deleted without deleting their recurring definition and may be recreated by future scheduler catch-up behavior. Archive/delete behavior for referenced configuration entities remains undecided.
 7. **Deployment database:** keep SQLite for the first release or plan an early move to PostgreSQL before collaborative production use.
 
 ## Explicitly deferred scope

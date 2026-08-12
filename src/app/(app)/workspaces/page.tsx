@@ -17,7 +17,6 @@ export default async function Home() {
   return (
     <div className="flex justify-center">
       <div className="w-full max-w-3xl space-y-8">
-
         <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="space-y-1">
             <h2 className="text-xl font-semibold text-zinc-950">Your workspaces</h2>

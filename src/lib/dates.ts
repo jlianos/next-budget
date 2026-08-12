@@ -1,39 +1,46 @@
 import dayjs, { type Dayjs } from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 
 dayjs.extend(customParseFormat);
 dayjs.extend(utc);
+dayjs.extend(timezone);
+
+export const APP_TIME_ZONE = "Europe/Athens";
 
 const DATE_FORMAT = "YYYY-MM-DD";
+const DATE_TIME_LOCAL_FORMAT = "YYYY-MM-DDTHH:mm";
 
-export type OverviewDateRange = {
+export type DateRange = {
   from: string;
   to: string;
   start: Date;
   endExclusive: Date;
 };
 
-function parseDate(value: string | undefined): Dayjs | null {
+function parseCalendarDate(value: string | undefined): Dayjs | null {
   if (!value) {
     return null;
   }
 
-  const parsed = dayjs.utc(value, DATE_FORMAT, true);
+  const strictlyParsed = dayjs(value, DATE_FORMAT, true);
 
-  return parsed.isValid() ? parsed.startOf("day") : null;
+  if (!strictlyParsed.isValid()) {
+    return null;
+  }
+
+  return dayjs.tz(value, DATE_FORMAT, APP_TIME_ZONE).startOf("day");
 }
 
-export function getOverviewDateRange(
-  from: string | undefined,
-  to: string | undefined,
-  now = new Date(),
-): OverviewDateRange {
-  const currentMonthStart = dayjs.utc(now).startOf("month");
+export function getDateRange(from: string | undefined, to: string | undefined, now = new Date()): DateRange {
+  const currentMonthStart = dayjs(now).tz(APP_TIME_ZONE).startOf("month");
+
   const currentMonthEnd = currentMonthStart.endOf("month");
 
-  let normalizedFrom = parseDate(from) ?? currentMonthStart;
-  let normalizedTo = parseDate(to) ?? currentMonthEnd;
+  let normalizedFrom = parseCalendarDate(from) ?? currentMonthStart;
+
+  let normalizedTo = parseCalendarDate(to) ?? currentMonthEnd;
 
   if (normalizedFrom.isAfter(normalizedTo)) {
     normalizedFrom = currentMonthStart;
@@ -43,7 +50,25 @@ export function getOverviewDateRange(
   return {
     from: normalizedFrom.format(DATE_FORMAT),
     to: normalizedTo.format(DATE_FORMAT),
-    start: normalizedFrom.toDate(),
-    endExclusive: normalizedTo.add(1, "day").startOf("day").toDate(),
+    start: normalizedFrom.utc().toDate(),
+    endExclusive: normalizedTo.add(1, "day").startOf("day").utc().toDate(),
   };
+}
+
+export function formatDateTime(value: string | Date) {
+  return dayjs(value).tz(APP_TIME_ZONE).format("D MMM YYYY, HH:mm");
+}
+
+export function parseDateTime(value: string) {
+  const strictlyParsed = dayjs(value, DATE_TIME_LOCAL_FORMAT, true);
+
+  if (!strictlyParsed.isValid()) {
+    throw new Error("Invalid date and time.");
+  }
+
+  return dayjs.tz(value, DATE_TIME_LOCAL_FORMAT, APP_TIME_ZONE).utc().toDate();
+}
+
+export function formatDateTimeInput(value: string | Date = new Date()) {
+  return dayjs(value).tz(APP_TIME_ZONE).format(DATE_TIME_LOCAL_FORMAT);
 }

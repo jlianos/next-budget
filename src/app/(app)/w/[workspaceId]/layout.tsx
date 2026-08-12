@@ -12,10 +12,7 @@ type WorkspaceLayoutProps = {
   }>;
 };
 
-export default async function WorkspaceLayout({
-  children,
-  params,
-}: WorkspaceLayoutProps) {
+export default async function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {
   const user = await requireUser();
   const { workspaceId } = await params;
   const membership = await getWorkspaceMembership(user.id, workspaceId);

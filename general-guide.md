@@ -42,9 +42,11 @@ The user can explicitly ask Codex to implement a change directly instead of foll
 
 - Use Day.js for shared date normalization and formatting.
 - Keep date-only URL values in `YYYY-MM-DD` form.
-- Overview `from` and `to` values are inclusive for the user and default to the current UTC month.
+- Use `Europe/Athens` as the application timezone until workspace or user timezone preferences are introduced.
+- Overview `from` and `to` values are inclusive for the user and default to the current Athens calendar month.
 - Convert the inclusive `to` value to the start of the following day and query with `occurredAt >= start` and `occurredAt < endExclusive`.
-- Revisit UTC calendar boundaries when user timezone preferences are introduced.
+- Interpret `datetime-local` form values as Athens wall time, convert them to UTC for storage, and convert stored UTC instants back to Athens time for display.
+- Revisit the application timezone when user or workspace timezone preferences are introduced.
 
 ## Next.js conventions
 

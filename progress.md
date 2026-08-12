@@ -1,6 +1,6 @@
 # Implementation Progress
 
-Last updated: 2026-08-11
+Last updated: 2026-08-12
 
 This is the working checklist for the application. Product direction, architecture, and phase details live in [next-steps.md](next-steps.md).
 
@@ -9,28 +9,28 @@ This is the working checklist for the application. Product direction, architectu
 ### Read-only workspace overview
 
 - [x] Define the initial workspace overview query result shape.
-- [ ] Build workspace-scoped dashboard queries.
+- [x] Build workspace-scoped dashboard queries.
 - [x] Add URL-backed `from` and `to` controls that default to the current month.
 - [x] Show selected-period income, expenses, and net cash flow.
 - [x] Calculate and display all-time wallet balances.
 - [x] Calculate selected-period expense totals by category for the upcoming chart.
-- [ ] Display the expense-by-category chart.
-- [ ] Show recent transaction and transfer activity.
-- [ ] Show upcoming recurring transactions.
-- [ ] Add useful overview loading and empty states.
+- [x] Display the expense-by-category proportional bar visualization.
+- [x] Show recent transaction and transfer activity.
+- [x] Show upcoming recurring transactions.
+- [x] Add useful overview loading and section empty states.
 - [ ] Test financial summary calculations.
 
 ### Foundation follow-up
 
 - [ ] Add authentication and authorization tests.
 - [x] Make workspace IDs easy to copy and share.
-- [ ] Remove duplicated workspace-page user controls now provided by the app shell.
+- [x] Remove duplicated workspace-page user controls now provided by the app shell.
 
 ## Decisions needed soon
 
-- [ ] Approve the initial `ADMIN`, `MEMBER`, and `VIEWER` permission policy proposed in `next-steps.md`.
+- [x] Approve the initial `ADMIN`, `MEMBER`, and `VIEWER` permission policy proposed in `next-steps.md`.
 - [x] Choose custom email/password sessions or an authentication library/provider.
-- [ ] Confirm whether members may edit only their own activity and recurring definitions.
+- [x] Confirm version-one permissions: `ADMIN` and `MEMBER` have the same rights; `VIEWER` is read-only.
 - [ ] Confirm that transfers must stay within one workspace.
 - [x] Adopt simple version-one wallet balances; defer opening balances and explicit liability/credit-card behavior.
 - [ ] Choose the recurring transaction execution strategy.
@@ -70,25 +70,25 @@ This is the working checklist for the application. Product direction, architectu
 
 ### Phase 2 — Read-only overview
 
-- [ ] Build workspace-scoped dashboard queries.
+- [x] Build workspace-scoped dashboard queries.
 - [x] Add a URL-backed date range that defaults to the current month.
 - [x] Show selected-period income, expenses, and net cash flow.
 - [x] Calculate and display wallet balances.
-- [ ] Show spending grouped by transaction type and category.
-- [ ] Show recent combined transaction and transfer activity.
-- [ ] Show upcoming recurring transactions.
+- [x] Show spending grouped by category with its transaction-type context.
+- [x] Show recent combined transaction and transfer activity.
+- [x] Show upcoming recurring transactions.
 - [ ] Add useful first-use and empty states.
 - [ ] Test financial summary calculations.
 
 ### Phase 3 — Core activity management
 
 - [ ] Create the global Expense / Income / Transfer entry flow.
-- [ ] Create income and expense transactions.
-- [ ] Edit permitted transactions.
-- [ ] Delete permitted transactions safely.
-- [ ] Build the combined activity timeline.
-- [ ] Add date, direction, wallet, type, category, and creator filters.
-- [ ] Keep activity filters in the URL.
+- [x] Create income and expense transactions.
+- [x] Edit permitted transactions.
+- [x] Delete permitted transactions safely.
+- [x] Build the initial combined transaction and transfer timeline.
+- [x] Add date, direction, wallet, type, category, and creator filters.
+- [x] Keep the initial activity date-range filter in the URL.
 - [ ] Add paginated or cursor-based history loading.
 - [ ] Build transaction detail views.
 - [ ] Add pending, success, validation, and failure feedback.
@@ -98,10 +98,10 @@ This is the working checklist for the application. Product direction, architectu
 
 - [ ] Build wallet management screens.
 - [ ] Build wallet detail and activity views.
-- [ ] Create transfers between permitted wallets.
-- [ ] Edit and delete permitted transfers.
-- [ ] Include transfers correctly in derived wallet balances.
-- [ ] Prevent same-wallet and invalid cross-workspace transfers.
+- [x] Create transfers between permitted wallets.
+- [x] Edit and delete permitted transfers.
+- [x] Include transfers correctly in derived wallet balances.
+- [x] Prevent same-wallet and invalid cross-workspace transfers.
 - [ ] Test wallet balance calculations.
 
 ### Phase 5 — Reports
@@ -177,3 +177,22 @@ Items in this section should move into the roadmap only after an approved produc
 - **2026-08-11:** Added and manually verified all-time wallet balances, including incoming and outgoing transfers, for the personal and household seed workspaces.
 - **2026-08-11:** Avoided Prisma SQLite `groupBy` Decimal sums after verification showed fractional values could be truncated; wallet calculations now use exact per-wallet aggregates.
 - **2026-08-11:** Added exact selected-period expense totals by category as the data source for the next overview chart step.
+- **2026-08-12:** Displayed selected-period expense categories as proportional bars without adding a client chart dependency.
+- **2026-08-12:** Added the five most recent workspace-scoped transactions and transfers for the selected period.
+- **2026-08-12:** Added upcoming active recurring items with workspace, date, and active-schedule constraints, including an empty state for workspaces without schedules.
+- **2026-08-12:** Completed the main read-only Overview content; calculation tests and shared loading/first-use states remain.
+- **2026-08-12:** Added a route-level Overview loading skeleton and section-specific empty states.
+- **2026-08-12:** Approved transaction creation for `ADMIN` and `MEMBER`, with `VIEWER` remaining read-only and all references verified against the route workspace.
+- **2026-08-12:** Implemented and manually verified workspace-scoped income and expense creation with exact decimal validation and role enforcement.
+- **2026-08-12:** Adopted `Europe/Athens` as the temporary application timezone, with UTC database storage and DST-aware input, display, and reporting boundaries.
+- **2026-08-12:** Added a workspace-scoped combined Activity timeline for transactions and transfers with an Athens-calendar URL date range and a useful empty state.
+- **2026-08-12:** Implemented role-protected, same-workspace transfer creation with distinct-wallet validation and exact decimal amounts.
+- **2026-08-12:** Manually verified transfer effects on both wallet balances and added an URL-backed Activity kind filter for income, expenses, and transfers.
+- **2026-08-12:** Added an URL-backed Activity wallet filter covering transactions and both sides of transfers, with workspace-option normalization.
+- **2026-08-12:** Added an URL-backed, workspace-normalized Activity transaction-type filter that composes with date, kind, and wallet filters.
+- **2026-08-12:** Added URL-backed Activity category and creator filters, with workspace-scoped option validation and support for filtering both transactions and transfers by creator.
+- **2026-08-12:** Confirmed the version-one permission policy: `ADMIN` and `MEMBER` share full management rights, while `VIEWER` remains read-only.
+- **2026-08-12:** Implemented workspace-scoped transaction editing with a reusable create/edit form, preserved creator attribution, recurring-occurrence guidance, and viewer-safe UI and action guards.
+- **2026-08-12:** Approved explicit-confirmation hard deletion for transactions, including generated recurring occurrences, for `ADMIN` and `MEMBER`; `VIEWER` remains read-only.
+- **2026-08-12:** Implemented and manually verified atomic workspace-scoped transaction deletion with two-step confirmation, recurring-occurrence guidance, route revalidation, and viewer authorization enforcement.
+- **2026-08-12:** Implemented and manually verified transfer editing and atomic two-step deletion, preserving creator attribution and keeping wallet balances synchronized without changing cash-flow totals.

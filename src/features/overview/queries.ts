@@ -9,16 +9,31 @@ type OverviewSummaryInput = {
   workspaceId: string;
   start: Date;
   endExclusive: Date;
+  now?: Date;
 };
 
-export async function getOverviewSummary({ userId, workspaceId, start, endExclusive }: OverviewSummaryInput) {
+export async function getOverviewSummary({
+  userId,
+  workspaceId,
+  start,
+  endExclusive,
+  now = new Date(),
+}: OverviewSummaryInput) {
   const membership = await getWorkspaceMembership(userId, workspaceId);
 
   if (!membership) {
     return null;
   }
 
-  const [incomeResult, expenseResult, wallets, expenseTransactions] = await Promise.all([
+  const [
+    incomeResult,
+    expenseResult,
+    wallets,
+    expenseTransactions,
+    recentTransactions,
+    recentTransfers,
+    upcomingRecurring,
+  ] = await Promise.all([
     prisma.transaction.aggregate({
       where: {
         occurredAt: {
@@ -99,6 +114,145 @@ export async function getOverviewSummary({ userId, workspaceId, start, endExclus
             transactionType: {
               select: {
                 name: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+
+    prisma.transaction.findMany({
+      where: {
+        occurredAt: {
+          gte: start,
+          lt: endExclusive,
+        },
+        wallet: {
+          workspaceId,
+        },
+        category: {
+          transactionType: {
+            workspaceId,
+          },
+        },
+      },
+      orderBy: {
+        occurredAt: "desc",
+      },
+      take: 5,
+      select: {
+        id: true,
+        amount: true,
+        occurredAt: true,
+        recurringTransactionId: true,
+        wallet: {
+          select: {
+            name: true,
+          },
+        },
+        category: {
+          select: {
+            name: true,
+            transactionType: {
+              select: {
+                direction: true,
+              },
+            },
+          },
+        },
+        createdBy: {
+          select: {
+            email: true,
+          },
+        },
+      },
+    }),
+
+    prisma.transfer.findMany({
+      where: {
+        occurredAt: {
+          gte: start,
+          lt: endExclusive,
+        },
+        fromWallet: {
+          workspaceId,
+        },
+        toWallet: {
+          workspaceId,
+        },
+      },
+      orderBy: {
+        occurredAt: "desc",
+      },
+      take: 5,
+      select: {
+        id: true,
+        amount: true,
+        occurredAt: true,
+        fromWallet: {
+          select: {
+            name: true,
+          },
+        },
+        toWallet: {
+          select: {
+            name: true,
+          },
+        },
+        createdBy: {
+          select: {
+            email: true,
+          },
+        },
+      },
+    }),
+
+    prisma.recurringTransaction.findMany({
+      where: {
+        isActive: true,
+        nextAt: {
+          gte: now,
+        },
+        wallet: {
+          workspaceId,
+        },
+        category: {
+          transactionType: {
+            workspaceId,
+          },
+        },
+        OR: [
+          {
+            endsAt: null,
+          },
+          {
+            endsAt: {
+              gte: now,
+            },
+          },
+        ],
+      },
+      orderBy: {
+        nextAt: "asc",
+      },
+      take: 5,
+      select: {
+        id: true,
+        amount: true,
+        frequency: true,
+        interval: true,
+        nextAt: true,
+        wallet: {
+          select: {
+            name: true,
+          },
+        },
+        category: {
+          select: {
+            name: true,
+            transactionType: {
+              select: {
+                direction: true,
               },
             },
           },
@@ -221,6 +375,43 @@ export async function getOverviewSummary({ userId, workspaceId, start, endExclus
       amount: category.amount.toFixed(2),
     }));
 
+  const recentActivity = [
+    ...recentTransactions.map((transaction) => ({
+      kind: "transaction" as const,
+      id: transaction.id,
+      amount: transaction.amount.toFixed(2),
+      occurredAt: transaction.occurredAt.toISOString(),
+      direction: transaction.category.transactionType.direction,
+      categoryName: transaction.category.name,
+      walletName: transaction.wallet.name,
+      createdByEmail: transaction.createdBy.email,
+      recurring: transaction.recurringTransactionId !== null,
+    })),
+
+    ...recentTransfers.map((transfer) => ({
+      kind: "transfer" as const,
+      id: transfer.id,
+      amount: transfer.amount.toFixed(2),
+      occurredAt: transfer.occurredAt.toISOString(),
+      fromWalletName: transfer.fromWallet.name,
+      toWalletName: transfer.toWallet.name,
+      createdByEmail: transfer.createdBy.email,
+    })),
+  ]
+    .sort((first, second) => new Date(second.occurredAt).getTime() - new Date(first.occurredAt).getTime())
+    .slice(0, 5);
+
+  const upcomingRecurringItems = upcomingRecurring.map((item) => ({
+    id: item.id,
+    amount: item.amount.toFixed(2),
+    frequency: item.frequency,
+    interval: item.interval,
+    nextAt: item.nextAt.toISOString(),
+    walletName: item.wallet.name,
+    categoryName: item.category.name,
+    direction: item.category.transactionType.direction,
+  }));
+
   return {
     currency: membership.workspace.currency,
     income: income.toFixed(2),
@@ -228,5 +419,7 @@ export async function getOverviewSummary({ userId, workspaceId, start, endExclus
     net: income.minus(expenses).toFixed(2),
     wallets: walletBalances,
     expenseCategories,
+    recentActivity,
+    upcomingRecurring: upcomingRecurringItems,
   };
 }

@@ -6,6 +6,24 @@ This is the working checklist for the application. Product direction, architectu
 
 ## Current focus
 
+### Wallet management
+
+- [x] Add a workspace-scoped wallet settings page.
+- [x] Show derived balances and activity-reference counts.
+- [x] Allow `ADMIN` and `MEMBER` users to create and rename wallets.
+- [x] Keep wallet names unique within a workspace.
+- [x] Allow hard deletion only for wallets with no transaction, transfer, or recurring references.
+- [x] Use an explicit styled confirmation dialog for wallet deletion.
+- [x] Keep `VIEWER` access read-only in both the UI and Server Actions.
+- [x] Manually verify create, rename, duplicate-name validation, confirmation cancellation, and deletion.
+
+### Next focus: transaction types and categories
+
+- [ ] Define the smallest useful V1 management rules for transaction types and categories.
+- [ ] Build workspace-scoped settings queries and screens.
+- [ ] Add role-protected create and rename actions.
+- [ ] Prevent deletion when financial or recurring records still reference an item.
+
 ### Read-only workspace overview
 
 - [x] Define the initial workspace overview query result shape.
@@ -18,7 +36,7 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Show recent transaction and transfer activity.
 - [x] Show upcoming recurring transactions.
 - [x] Add useful overview loading and section empty states.
-- [ ] Test financial summary calculations.
+- [x] Manually test financial summary calculations for V1.
 
 ### Foundation follow-up
 
@@ -31,10 +49,10 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Approve the initial `ADMIN`, `MEMBER`, and `VIEWER` permission policy proposed in `next-steps.md`.
 - [x] Choose custom email/password sessions or an authentication library/provider.
 - [x] Confirm version-one permissions: `ADMIN` and `MEMBER` have the same rights; `VIEWER` is read-only.
-- [ ] Confirm that transfers must stay within one workspace.
+- [x] Confirm that transfers must stay within one workspace.
 - [x] Adopt simple version-one wallet balances; defer opening balances and explicit liability/credit-card behavior.
 - [ ] Choose the recurring transaction execution strategy.
-- [ ] Choose archive/delete behavior for referenced financial entities.
+- [ ] Choose archive/delete behavior for referenced configuration entities other than wallets.
 - [ ] Confirm whether SQLite is only for local development or also intended for the first deployment.
 
 ## Completed foundation
@@ -78,7 +96,7 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Show recent combined transaction and transfer activity.
 - [x] Show upcoming recurring transactions.
 - [ ] Add useful first-use and empty states.
-- [ ] Test financial summary calculations.
+- [x] Manually test financial summary calculations for V1.
 
 ### Phase 3 — Core activity management
 
@@ -89,20 +107,20 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Build the initial combined transaction and transfer timeline.
 - [x] Add date, direction, wallet, type, category, and creator filters.
 - [x] Keep the initial activity date-range filter in the URL.
-- [ ] Add paginated or cursor-based history loading.
+- [x] Keep the V1 combined history capped at 25 items and defer pagination.
 - [ ] Build transaction detail views.
-- [ ] Add pending, success, validation, and failure feedback.
-- [ ] Test workspace isolation and activity permissions.
+- [x] Add pending, success, validation, and failure feedback.
+- [x] Manually test workspace isolation and activity permissions for V1.
 
 ### Phase 4 — Wallets and transfers
 
-- [ ] Build wallet management screens.
+- [x] Build wallet management screens.
 - [ ] Build wallet detail and activity views.
 - [x] Create transfers between permitted wallets.
 - [x] Edit and delete permitted transfers.
 - [x] Include transfers correctly in derived wallet balances.
 - [x] Prevent same-wallet and invalid cross-workspace transfers.
-- [ ] Test wallet balance calculations.
+- [x] Manually test wallet balance calculations for V1.
 
 ### Phase 5 — Reports
 
@@ -196,3 +214,6 @@ Items in this section should move into the roadmap only after an approved produc
 - **2026-08-12:** Approved explicit-confirmation hard deletion for transactions, including generated recurring occurrences, for `ADMIN` and `MEMBER`; `VIEWER` remains read-only.
 - **2026-08-12:** Implemented and manually verified atomic workspace-scoped transaction deletion with two-step confirmation, recurring-occurrence guidance, route revalidation, and viewer authorization enforcement.
 - **2026-08-12:** Implemented and manually verified transfer editing and atomic two-step deletion, preserving creator attribution and keeping wallet balances synchronized without changing cash-flow totals.
+- **2026-08-12:** Deferred Activity pagination for version 1; the combined timeline remains capped at 25 items.
+- **2026-08-12:** Implemented and manually verified workspace-scoped wallet management with balances, reference counts, role-protected create/rename actions, duplicate-name handling, and deletion limited to unreferenced wallets through a styled confirmation dialog.
+- **2026-08-12:** Passed TypeScript, Biome lint, and the Next.js production build after completing wallet management.

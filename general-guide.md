@@ -56,6 +56,7 @@ The user can explicitly ask Codex to implement a change directly instead of foll
 - Use Server Actions for authenticated form mutations.
 - Use Route Handlers when a normal request/response boundary is required, such as setting a cookie before redirecting from `/`.
 - Revalidate affected paths after mutations when server-rendered data must refresh.
+- Prefer a small styled native `<dialog>` for destructive confirmations before adding a modal dependency or using `window.confirm`.
 
 ## Verification
 
@@ -65,6 +66,7 @@ After each focused change, verify in proportion to its risk:
 - Check validation, authentication, authorization, and error states.
 - Test the user-visible behavior in the running application when possible.
 - Run TypeScript or a production build after a completed flow or structural change.
+- Manual end-to-end checks are acceptable for version 1 milestones; automated coverage remains a later hardening task.
 - Treat generated `.next` files as build output, not application source.
 
 ## Scope and safety

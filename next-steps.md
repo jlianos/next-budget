@@ -130,7 +130,7 @@ The workspace identifier in the route makes context explicit, supports direct li
 - Preset periods plus a custom date range.
 - Filters for wallet, direction, type, category, and creator.
 - URL-backed filters so views can be linked and revisited.
-- Pagination or cursor-based loading rather than fetching the full history.
+- A capped combined history for version 1; pagination or cursor-based loading is deferred.
 - Detail view or drawer with edit/delete actions based on permissions.
 
 ### Reports
@@ -153,7 +153,7 @@ The workspace identifier in the route makes context explicit, supports direct li
 ### Settings
 
 - Workspace: name and currency.
-- Wallets: create, rename, and review balance/activity before any removal.
+- Wallets: create, rename, review balances and reference counts, and delete only when no activity references the wallet.
 - Categories: manage the two-level transaction type → category hierarchy, grouped by income/expense direction.
 - Members: invite/add workflow when implemented, role management, and clear role descriptions.
 - Personal: sign-out and future display preferences.
@@ -241,7 +241,7 @@ Feature folders can contain their queries, server actions, validation schemas, d
 - Recheck authentication, role, and workspace ownership inside every action.
 - Validate all untrusted input at the server boundary.
 - Keep monetary calculations in `Prisma.Decimal` or normalized minor units; do not perform financial arithmetic with JavaScript floating-point numbers.
-- Use Day.js for date normalization and formatting. The initial overview uses UTC calendar boundaries until user timezone preferences are designed.
+- Use Day.js for date normalization and formatting. Calendar inputs and reporting boundaries currently use `Europe/Athens`, while stored instants remain UTC.
 - Keep URL dates in `YYYY-MM-DD` form. Treat `from` as inclusive and convert the inclusive `to` date to an exclusive next-day database boundary.
 - Treat the route `workspaceId` as the active workspace context. The per-user cookie is a preference for `/` redirects and explicit workspace selection, not authority over a workspace route.
 - Do not rely on Prisma SQLite `groupBy` Decimal sums without verification; fractional values were observed to truncate. Prefer exact `aggregate` queries or `Prisma.Decimal` application-side totals where needed.
@@ -276,12 +276,12 @@ Feature folders can contain their queries, server actions, validation schemas, d
 - Seed-backed states for both personal and household workspaces.
 - Query and calculation tests for financial summaries.
 
-Current status: selected-period income, expenses, and net cash flow are displayed; all-time wallet balances are displayed; and exact expense-category totals are prepared for the chart. The next implementation step is the expense-by-category visualization, followed by recent activity and upcoming recurring items.
+Current status: the overview displays selected-period income, expenses, net cash flow, expense-category proportions, recent combined activity, upcoming recurring items, and all-time wallet balances. Loading and section empty states are implemented, and the calculations have been manually verified for version 1.
 
 ### Phase 3 — Core activity management
 
 - Create, edit, and delete income/expense transactions.
-- Combined activity list, detail view, filtering, and pagination.
+- Combined activity list and URL-backed filtering; the version-one list is capped at 25 items and pagination is deferred.
 - Permission checks and audit-friendly creator display.
 - Accessible forms with pending, success, validation, and error states.
 
@@ -291,6 +291,8 @@ Current status: selected-period income, expenses, and net cash flow are displaye
 - Create, edit, and delete transfers.
 - Derived wallet balances and wallet detail activity.
 - Guardrails for same-wallet and cross-workspace transfer mistakes.
+
+Current status: transfer creation, editing, and deletion are complete. Wallet management now supports balance/reference review, role-protected creation and renaming, workspace-unique names, and deletion only for unreferenced wallets. Dedicated wallet detail views remain optional follow-up work; transaction type and category management is the next V1 usability priority.
 
 ### Phase 5 — Reports
 
@@ -339,9 +341,9 @@ The following choices materially affect architecture or the schema and should be
 1. **Authentication:** resolved in favor of custom email/password sessions using the existing `passwordHash`.
 2. **Wallet semantics:** version 1 treats wallets as simple money containers with balances derived as income minus expenses plus incoming transfers minus outgoing transfers. Opening balances and explicit liability/credit-card behavior remain undecided.
 3. **Role permissions:** resolved for version 1: `ADMIN` and `MEMBER` have the same management rights; `VIEWER` is read-only. The separate admin role is retained for possible future policy changes.
-4. **Transfers:** whether transfers are always constrained to wallets in one workspace.
+4. **Transfers:** resolved for version 1: both wallets must belong to the route workspace, and source and destination must be different.
 5. **Recurring execution:** request-driven catch-up, an external scheduled job, or a deployment-platform scheduler.
-6. **Deletion policy:** version-one activity records use explicit-confirmation hard deletion for `ADMIN` and `MEMBER`; `VIEWER` remains read-only. Generated recurring occurrences may be deleted without deleting their recurring definition and may be recreated by future scheduler catch-up behavior. Archive/delete behavior for referenced configuration entities remains undecided.
+6. **Deletion policy:** version-one activity records use explicit-confirmation hard deletion for `ADMIN` and `MEMBER`; `VIEWER` remains read-only. Generated recurring occurrences may be deleted without deleting their recurring definition and may be recreated by future scheduler catch-up behavior. Wallets use hard deletion only when no transaction, transfer, or recurring definition references them. Policy for other referenced configuration entities remains undecided.
 7. **Deployment database:** keep SQLite for the first release or plan an early move to PostgreSQL before collaborative production use.
 
 ## Explicitly deferred scope

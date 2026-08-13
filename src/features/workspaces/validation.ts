@@ -1,13 +1,15 @@
 import * as v from "valibot";
 
+export const WorkspaceNameSchema = v.pipe(
+  v.string("Please enter a workspace name."),
+  v.trim(),
+  v.nonEmpty("Please enter a workspace name."),
+  v.minLength(2, "Name must contain at least 2 characters."),
+  v.maxLength(60, "Name cannot exceed 60 characters."),
+);
+
 export const CreateWorkspaceSchema = v.object({
-  name: v.pipe(
-    v.string("Please enter a workspace name."),
-    v.trim(),
-    v.nonEmpty("Please enter a workspace name."),
-    v.minLength(2, "Name must contain at least 2 characters."),
-    v.maxLength(60, "Name cannot exceed 60 characters."),
-  ),
+  name: WorkspaceNameSchema,
   currency: v.picklist(["EUR", "USD"], "Please select a supported currency."),
 });
 

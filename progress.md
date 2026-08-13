@@ -6,6 +6,15 @@ This is the working checklist for the application. Product direction, architectu
 
 ## Current focus
 
+### Completed: workspace settings and members
+
+- [x] Add a read-only workspace member list for every workspace role.
+- [x] Allow `ADMIN` and `MEMBER` users to rename workspaces.
+- [x] Keep workspace settings read-only for `VIEWER` users.
+- [x] Allow deletion only when no transactions, transfers, or recurring definitions are attached.
+- [x] Delete empty workspace structure atomically and clear the matching workspace preference.
+- [x] Manually verify renaming, guarded deletion, empty-workspace deletion, redirection, and viewer access.
+
 ### Completed: transaction type and category management
 
 - [x] Define the V1 hierarchy and immutable direction/parent rules.
@@ -68,7 +77,7 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Confirm that transfers must stay within one workspace.
 - [x] Adopt simple version-one wallet balances; defer opening balances and explicit liability/credit-card behavior.
 - [x] Choose a reusable generator executed by a standalone polling worker for recurring transactions.
-- [ ] Choose archive/delete behavior for workspace membership and the workspace itself.
+- [x] Choose V1 workspace deletion behavior: permanent deletion only when no financial history or recurring definitions are attached.
 - [ ] Confirm whether SQLite is only for local development or also intended for the first deployment.
 
 ## Completed foundation
@@ -162,12 +171,12 @@ This is the working checklist for the application. Product direction, architectu
 
 ### Phase 7 — Workspace administration
 
-- [ ] Build workspace settings.
+- [x] Build workspace settings.
 - [x] Build transaction type and category management.
-- [ ] Build membership and role management.
-- [ ] Enforce the approved role policy in reads and writes.
-- [ ] Implement the approved archive/delete behavior.
-- [ ] Add safeguards around historical records.
+- [x] Build the V1 read-only workspace member list; defer membership and role management.
+- [x] Enforce the approved role policy in reads and writes.
+- [x] Implement the approved workspace deletion behavior.
+- [x] Add safeguards around historical financial records and recurring definitions.
 
 ### Phase 8 — Hardening and release readiness
 
@@ -240,3 +249,4 @@ Items in this section should move into the roadmap only after an approved produc
 - **2026-08-13:** Implemented recurring income/expense definitions, active/inactive start-stop management, Athens-aware anchored schedules, idempotent catch-up generation, and a graceful standalone polling worker with one-pass mode; manually verified creation and duplicate prevention, and passed focused Biome checks and the production build.
 - **2026-08-13:** Added a workspace-wide floating quick-add transaction dialog for `ADMIN` and `MEMBER`, with fresh Athens time defaults, reusable form accessibility IDs, automatic close/reset after creation, and viewer-safe rendering; manually verified the flow and passed the production build.
 - **2026-08-13:** Added repeatable real-database recurring-generator integration scenarios to the development seed and verified larger intervals, month-end anchoring, inclusive and expired end dates, inactive schedules, the 100-occurrence catch-up limit, continuation, and idempotency with all assertions passing.
+- **2026-08-13:** Implemented and manually verified workspace settings with a read-only member list, role-protected renaming, and atomic deletion limited to workspaces without transactions, transfers, or recurring definitions; the production build passes.

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 
 import { FormErrors } from "@/components/forms/form-errors";
@@ -8,6 +9,7 @@ import { joinWorkspace } from "../actions";
 import { initialJoinWorkspaceFormState } from "../validation";
 
 export function JoinWorkspaceForm() {
+  const t = useTranslations("Workspaces.forms");
   const [state, formAction, pending] = useActionState(joinWorkspace, initialJoinWorkspaceFormState);
 
   const workspaceIdErrors = state.fieldErrors?.workspaceId;
@@ -16,7 +18,7 @@ export function JoinWorkspaceForm() {
     <form action={formAction} className="mt-6 space-y-5">
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="workspaceId">
-          Workspace ID
+          {t("workspaceId")}
         </label>
 
         <input
@@ -29,7 +31,7 @@ export function JoinWorkspaceForm() {
           id="workspaceId"
           maxLength={100}
           name="workspaceId"
-          placeholder="Paste the workspace ID"
+          placeholder={t("workspaceIdPlaceholder")}
           required
           spellCheck={false}
           type="text"
@@ -55,7 +57,7 @@ export function JoinWorkspaceForm() {
         disabled={pending}
         type="submit"
       >
-        {pending ? "Joining workspace…" : "Join workspace"}
+        {pending ? t("joiningWorkspace") : t("joinWorkspace")}
       </button>
     </form>
   );

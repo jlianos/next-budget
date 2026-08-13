@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState, useEffect, useRef } from "react";
 
 import { FormErrors } from "@/components/forms/form-errors";
@@ -13,6 +14,7 @@ type CreateCategoryFormProps = {
 };
 
 export function CreateCategoryForm({ workspaceId, transactionTypeId }: CreateCategoryFormProps) {
+  const t = useTranslations("Categories.forms");
   const formRef = useRef<HTMLFormElement>(null);
 
   const createThisCategory = createTransactionCategory.bind(null, workspaceId, String(transactionTypeId));
@@ -37,7 +39,7 @@ export function CreateCategoryForm({ workspaceId, transactionTypeId }: CreateCat
     <form action={formAction} className="space-y-3" ref={formRef}>
       <div className="space-y-2">
         <label className="text-sm font-medium text-zinc-700" htmlFor={nameId}>
-          Category name
+          {t("categoryName")}
         </label>
 
         <input
@@ -48,7 +50,7 @@ export function CreateCategoryForm({ workspaceId, transactionTypeId }: CreateCat
           maxLength={60}
           minLength={2}
           name="name"
-          placeholder="Groceries"
+          placeholder={t("categoryPlaceholder")}
           required
           type="text"
         />
@@ -58,7 +60,7 @@ export function CreateCategoryForm({ workspaceId, transactionTypeId }: CreateCat
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-zinc-700" htmlFor={descriptionId}>
-          Description <span className="text-zinc-500">(optional)</span>
+          {t("description")} <span className="text-zinc-500">({t("optional")})</span>
         </label>
 
         <textarea
@@ -68,7 +70,7 @@ export function CreateCategoryForm({ workspaceId, transactionTypeId }: CreateCat
           id={descriptionId}
           maxLength={200}
           name="description"
-          placeholder="Everyday food and supermarket purchases"
+          placeholder={t("descriptionPlaceholder")}
         />
 
         <FormErrors errors={descriptionErrors} id={descriptionErrorsId} />
@@ -91,7 +93,7 @@ export function CreateCategoryForm({ workspaceId, transactionTypeId }: CreateCat
         disabled={pending}
         type="submit"
       >
-        {pending ? "Creating category…" : "Add category"}
+        {pending ? t("creatingCategory") : t("addCategory")}
       </button>
     </form>
   );

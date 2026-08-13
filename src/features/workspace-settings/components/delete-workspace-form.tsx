@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState, useId, useRef } from "react";
 
 import { deleteWorkspace } from "../actions";
@@ -12,6 +13,7 @@ type DeleteWorkspaceFormProps = {
 };
 
 export function DeleteWorkspaceForm({ workspaceId, workspaceName, canDelete }: DeleteWorkspaceFormProps) {
+  const t = useTranslations("WorkspaceSettings.forms");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const dialogId = useId();
 
@@ -30,12 +32,10 @@ export function DeleteWorkspaceForm({ workspaceId, workspaceName, canDelete }: D
           disabled
           type="button"
         >
-          Delete workspace
+          {t("deleteWorkspace")}
         </button>
 
-        <p className="text-sm text-amber-700">
-          Delete all transactions, transfers, and recurring schedules before deleting this workspace.
-        </p>
+        <p className="text-sm text-amber-700">{t("deleteBlocked")}</p>
       </div>
     );
   }
@@ -47,7 +47,7 @@ export function DeleteWorkspaceForm({ workspaceId, workspaceName, canDelete }: D
         onClick={() => dialogRef.current?.showModal()}
         type="button"
       >
-        Delete workspace
+        {t("deleteWorkspace")}
       </button>
 
       <dialog
@@ -63,12 +63,14 @@ export function DeleteWorkspaceForm({ workspaceId, workspaceName, canDelete }: D
       >
         <div className="p-6">
           <h2 className="text-lg font-semibold text-zinc-950" id={titleId}>
-            Delete workspace?
+            {t("deleteTitle")}
           </h2>
 
           <p className="mt-2 text-sm text-zinc-600" id={descriptionId}>
-            <strong>{workspaceName}</strong>, its wallets, categories, and member access will be permanently deleted.
-            This action cannot be undone.
+            {t.rich("deleteDescription", {
+              workspaceName,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </p>
 
           {state.formError && (
@@ -84,7 +86,7 @@ export function DeleteWorkspaceForm({ workspaceId, workspaceName, canDelete }: D
               onClick={() => dialogRef.current?.close()}
               type="button"
             >
-              Cancel
+              {t("cancel")}
             </button>
 
             <form action={formAction}>
@@ -93,7 +95,7 @@ export function DeleteWorkspaceForm({ workspaceId, workspaceName, canDelete }: D
                 disabled={pending}
                 type="submit"
               >
-                {pending ? "Deleting workspace…" : "Delete permanently"}
+                {pending ? t("deletingWorkspace") : t("deletePermanently")}
               </button>
             </form>
           </div>

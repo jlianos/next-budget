@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState, useRef } from "react";
 
 import { deleteTransactionType } from "../actions";
@@ -16,6 +17,7 @@ export function DeleteTransactionTypeForm({
   transactionTypeId,
   transactionTypeName,
 }: DeleteTransactionTypeFormProps) {
+  const t = useTranslations("Categories.forms");
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const deleteThisTransactionType = deleteTransactionType.bind(null, workspaceId, String(transactionTypeId));
@@ -32,7 +34,7 @@ export function DeleteTransactionTypeForm({
         onClick={() => dialogRef.current?.showModal()}
         type="button"
       >
-        Delete type
+        {t("deleteType")}
       </button>
 
       <dialog
@@ -48,12 +50,14 @@ export function DeleteTransactionTypeForm({
       >
         <div className="p-6">
           <h2 className="text-lg font-semibold text-zinc-950" id={titleId}>
-            Delete transaction type?
+            {t("deleteTypeTitle")}
           </h2>
 
           <p className="mt-2 text-sm text-zinc-600" id={descriptionId}>
-            <strong>{transactionTypeName}</strong> will be permanently deleted. Its Income or Expense direction will
-            also be lost. This action cannot be undone.
+            {t.rich("deleteTypeDescription", {
+              typeName: transactionTypeName,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </p>
 
           {state.formError && (
@@ -69,7 +73,7 @@ export function DeleteTransactionTypeForm({
               onClick={() => dialogRef.current?.close()}
               type="button"
             >
-              Cancel
+              {t("cancel")}
             </button>
 
             <form action={formAction}>
@@ -78,7 +82,7 @@ export function DeleteTransactionTypeForm({
                 disabled={pending}
                 type="submit"
               >
-                {pending ? "Deleting…" : "Delete permanently"}
+                {pending ? t("deleting") : t("deletePermanently")}
               </button>
             </form>
           </div>

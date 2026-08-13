@@ -1,24 +1,38 @@
 import * as v from "valibot";
 
-const NameSchema = v.pipe(
-  v.string("Please enter a name."),
-  v.trim(),
-  v.nonEmpty("Please enter a name."),
-  v.minLength(2, "Name must contain at least 2 characters."),
-  v.maxLength(60, "Name cannot exceed 60 characters."),
-);
+type CategoryValidationMessages = {
+  nameRequired: string;
+  nameTooShort: string;
+  nameTooLong: string;
+  descriptionTooLong: string;
+  directionRequired: string;
+};
 
-const DescriptionSchema = v.pipe(v.string(), v.trim(), v.maxLength(200, "Description cannot exceed 200 characters."));
+export function createCategorySchemas(messages: CategoryValidationMessages) {
+  const NameSchema = v.pipe(
+    v.string(messages.nameRequired),
+    v.trim(),
+    v.nonEmpty(messages.nameRequired),
+    v.minLength(2, messages.nameTooShort),
+    v.maxLength(60, messages.nameTooLong),
+  );
 
-export const CreateTransactionTypeSchema = v.object({
-  name: NameSchema,
-  direction: v.picklist(["INCOME", "EXPENSE"], "Please select income or expense."),
-});
+  const DescriptionSchema = v.pipe(v.string(), v.trim(), v.maxLength(200, messages.descriptionTooLong));
 
-export const CategoryDetailsSchema = v.object({
-  name: NameSchema,
-  description: DescriptionSchema,
-});
+  return {
+    CreateTransactionTypeSchema: v.object({
+      name: NameSchema,
+      direction: v.picklist(["INCOME", "EXPENSE"], messages.directionRequired),
+    }),
+    CategoryDetailsSchema: v.object({
+      name: NameSchema,
+      description: DescriptionSchema,
+    }),
+    TransactionTypeNameSchema: v.object({
+      name: NameSchema,
+    }),
+  };
+}
 
 export type TransactionTypeFormState = {
   fieldErrors?: {
@@ -47,7 +61,3 @@ export const initialTransactionTypeFormState: TransactionTypeFormState = {};
 export const initialCategoryFormState: CategoryFormState = {};
 
 export const initialDeleteCategoryItemFormState: DeleteCategoryItemFormState = {};
-
-export const TransactionTypeNameSchema = v.object({
-  name: NameSchema,
-});

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/features/auth/dal";
 import { CreateCategoryDialog } from "@/features/categories/components/create-category-dialog";
 import { CreateTransactionTypeForm } from "@/features/categories/components/create-transaction-type-form";
@@ -15,12 +16,8 @@ type CategoriesPageProps = {
   }>;
 };
 
-function formatCount(count: number, singular: string) {
-  return `${count} ${singular}${count === 1 ? "" : "s"}`;
-}
-
 export default async function CategoriesPage({ params }: CategoriesPageProps) {
-  const [user, { workspaceId }] = await Promise.all([requireUser(), params]);
+  const [user, { workspaceId }, t] = await Promise.all([requireUser(), params, getTranslations("Categories")]);
 
   const data = await getCategoryManagementData(user.id, workspaceId);
 
@@ -33,29 +30,31 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
   const groups = [
     {
       direction: TransactionDirection.INCOME,
-      title: "Income types",
-      description: "Groups used to classify money entering the workspace.",
+      title: t("groups.income.title"),
+      description: t("groups.income.description"),
+      empty: t("groups.income.empty"),
     },
     {
       direction: TransactionDirection.EXPENSE,
-      title: "Expense types",
-      description: "Groups used to classify money leaving the workspace.",
+      title: t("groups.expense.title"),
+      description: t("groups.expense.description"),
+      empty: t("groups.expense.empty"),
     },
   ];
 
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Transaction categories</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
-        <p className="mt-2 text-zinc-600">Organize income and expenses into types and categories.</p>
+        <p className="mt-2 text-zinc-600">{t("description")}</p>
       </header>
 
       {!canManage && (
         <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <p className="font-medium text-zinc-950">Read-only workspace</p>
+          <p className="font-medium text-zinc-950">{t("readOnly.title")}</p>
 
-          <p className="mt-1 text-sm text-zinc-600">Your viewer role does not allow category changes.</p>
+          <p className="mt-1 text-sm text-zinc-600">{t("readOnly.description")}</p>
         </div>
       )}
 
@@ -66,10 +65,10 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
         >
           <div className="mb-5">
             <h2 className="text-lg font-semibold tracking-tight" id="create-transaction-type-heading">
-              Create transaction type
+              {t("createType.title")}
             </h2>
 
-            <p className="mt-1 text-sm text-zinc-600">Add a top-level group for income or expense categories.</p>
+            <p className="mt-1 text-sm text-zinc-600">{t("createType.description")}</p>
           </div>
 
           <div className="max-w-md">
@@ -100,7 +99,7 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                         <h3 className="font-semibold text-zinc-950">{transactionType.name}</h3>
 
                         <p className="mt-1 text-sm text-zinc-500">
-                          {formatCount(transactionType.categoryCount, "category")}
+                          {t("counts.categories", { count: transactionType.categoryCount })}
                         </p>
                       </div>
 
@@ -110,7 +109,7 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                             transactionType.canDelete ? "bg-emerald-50 text-emerald-700" : "bg-zinc-100 text-zinc-600"
                           }`}
                         >
-                          {transactionType.canDelete ? "Can delete" : "Has categories"}
+                          {transactionType.canDelete ? t("badges.canDelete") : t("badges.hasCategories")}
                         </span>
                       )}
                     </div>
@@ -137,15 +136,15 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                                         : "bg-zinc-200 text-zinc-600"
                                     }`}
                                   >
-                                    {category.canDelete ? "Can delete" : "In use"}
+                                    {category.canDelete ? t("badges.canDelete") : t("badges.inUse")}
                                   </span>
                                 )}
                               </div>
 
                               <p className="mt-3 text-xs text-zinc-500">
                                 {[
-                                  formatCount(category.transactionCount, "transaction"),
-                                  formatCount(category.recurringCount, "recurring item"),
+                                  t("counts.transactions", { count: category.transactionCount }),
+                                  t("counts.recurringItems", { count: category.recurringCount }),
                                 ].join(" · ")}
                               </p>
 
@@ -160,9 +159,7 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
 
                               {canManage && category.canDelete && (
                                 <div className="mt-4 border-t border-zinc-200 pt-3">
-                                  <p className="mb-3 text-xs text-zinc-500">
-                                    This category has no financial activity and can be permanently deleted.
-                                  </p>
+                                  <p className="mb-3 text-xs text-zinc-500">{t("categoryDeleteHint")}</p>
 
                                   <DeleteCategoryForm
                                     categoryId={category.id}
@@ -175,7 +172,7 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-sm text-zinc-500">No categories in this type yet.</p>
+                        <p className="text-sm text-zinc-500">{t("emptyType")}</p>
                       )}
                     </div>
 
@@ -198,9 +195,7 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
 
                     {canManage && transactionType.canDelete && (
                       <div className="mt-5 border-t border-zinc-200 pt-4">
-                        <p className="mb-3 text-xs text-zinc-500">
-                          This type has no categories and can be permanently deleted.
-                        </p>
+                        <p className="mb-3 text-xs text-zinc-500">{t("typeDeleteHint")}</p>
 
                         <DeleteTransactionTypeForm
                           transactionTypeId={transactionType.id}
@@ -214,7 +209,7 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
               </ul>
             ) : (
               <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-6">
-                <p className="text-sm text-zinc-600">No {group.title.toLowerCase()} yet.</p>
+                <p className="text-sm text-zinc-600">{group.empty}</p>
               </div>
             )}
           </section>

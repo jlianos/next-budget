@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import * as v from "valibot";
 import prisma from "@/db/prisma";
 import { requireUser } from "@/features/auth/dal";
@@ -8,20 +9,33 @@ import { Prisma, WorkspaceRole } from "@/generated/prisma/client";
 import { DatabaseIdSchema } from "@/lib/validation";
 
 import {
-  CategoryDetailsSchema,
   type CategoryFormState,
-  CreateTransactionTypeSchema,
-  type TransactionTypeFormState,
-  TransactionTypeNameSchema,
+  createCategorySchemas,
   type DeleteCategoryItemFormState,
+  type TransactionTypeFormState,
 } from "./validation";
+
+async function getCategoryActionContext() {
+  const t = await getTranslations("Categories.feedback");
+
+  const schemas = createCategorySchemas({
+    nameRequired: t("validation.nameRequired"),
+    nameTooShort: t("validation.nameTooShort"),
+    nameTooLong: t("validation.nameTooLong"),
+    descriptionTooLong: t("validation.descriptionTooLong"),
+    directionRequired: t("validation.directionRequired"),
+  });
+
+  return { schemas, t };
+}
 
 export async function createTransactionType(
   workspaceId: string,
   _previousState: TransactionTypeFormState,
   formData: FormData,
 ): Promise<TransactionTypeFormState> {
-  const user = await requireUser();
+  const [user, { schemas, t }] = await Promise.all([requireUser(), getCategoryActionContext()]);
+  const { CreateTransactionTypeSchema } = schemas;
 
   const result = v.safeParse(CreateTransactionTypeSchema, {
     name: formData.get("name"),
@@ -48,13 +62,13 @@ export async function createTransactionType(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot create transaction types.",
+      formError: t("cannotCreateTypes"),
     };
   }
 
@@ -70,7 +84,7 @@ export async function createTransactionType(
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return {
         fieldErrors: {
-          name: ["A transaction type with this name already exists."],
+          name: [t("typeDuplicate")],
         },
       };
     }
@@ -78,14 +92,14 @@ export async function createTransactionType(
     console.error("Unable to create transaction type:", error);
 
     return {
-      formError: "Unable to create this transaction type. Please try again.",
+      formError: t("createTypeFailed"),
     };
   }
 
   revalidatePath(`/w/${workspaceId}/settings/categories`);
 
   return {
-    successMessage: "Transaction type created successfully.",
+    successMessage: t("typeCreated"),
   };
 }
 
@@ -95,13 +109,14 @@ export async function createTransactionCategory(
   _previousState: CategoryFormState,
   formData: FormData,
 ): Promise<CategoryFormState> {
-  const user = await requireUser();
+  const [user, { schemas, t }] = await Promise.all([requireUser(), getCategoryActionContext()]);
+  const { CategoryDetailsSchema } = schemas;
 
   const transactionTypeIdResult = v.safeParse(DatabaseIdSchema, transactionTypeId);
 
   if (!transactionTypeIdResult.success) {
     return {
-      formError: "This transaction type is invalid.",
+      formError: t("invalidType"),
     };
   }
 
@@ -130,13 +145,13 @@ export async function createTransactionCategory(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot create categories.",
+      formError: t("cannotCreateCategories"),
     };
   }
 
@@ -152,7 +167,7 @@ export async function createTransactionCategory(
 
   if (!transactionType) {
     return {
-      formError: "This transaction type is no longer available.",
+      formError: t("typeUnavailable"),
     };
   }
 
@@ -168,21 +183,21 @@ export async function createTransactionCategory(
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return {
         fieldErrors: {
-          name: ["A category with this name already exists in this type."],
+          name: [t("categoryDuplicate")],
         },
       };
     }
 
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
       return {
-        formError: "This transaction type is no longer available.",
+        formError: t("typeUnavailable"),
       };
     }
 
     console.error("Unable to create category:", error);
 
     return {
-      formError: "Unable to create this category. Please try again.",
+      formError: t("createCategoryFailed"),
     };
   }
 
@@ -190,7 +205,7 @@ export async function createTransactionCategory(
   revalidatePath(`/w/${workspaceId}/activity`);
 
   return {
-    successMessage: "Category created successfully.",
+    successMessage: t("categoryCreated"),
   };
 }
 
@@ -200,13 +215,14 @@ export async function updateTransactionType(
   _previousState: TransactionTypeFormState,
   formData: FormData,
 ): Promise<TransactionTypeFormState> {
-  const user = await requireUser();
+  const [user, { schemas, t }] = await Promise.all([requireUser(), getCategoryActionContext()]);
+  const { TransactionTypeNameSchema } = schemas;
 
   const transactionTypeIdResult = v.safeParse(DatabaseIdSchema, transactionTypeId);
 
   if (!transactionTypeIdResult.success) {
     return {
-      formError: "This transaction type is invalid.",
+      formError: t("invalidType"),
     };
   }
 
@@ -234,13 +250,13 @@ export async function updateTransactionType(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot rename transaction types.",
+      formError: t("cannotRenameTypes"),
     };
   }
 
@@ -257,14 +273,14 @@ export async function updateTransactionType(
 
     if (updateResult.count === 0) {
       return {
-        formError: "This transaction type is no longer available.",
+        formError: t("typeUnavailable"),
       };
     }
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return {
         fieldErrors: {
-          name: ["A transaction type with this name already exists."],
+          name: [t("typeDuplicate")],
         },
       };
     }
@@ -272,7 +288,7 @@ export async function updateTransactionType(
     console.error("Unable to rename transaction type:", error);
 
     return {
-      formError: "Unable to rename this transaction type. Please try again.",
+      formError: t("renameTypeFailed"),
     };
   }
 
@@ -281,7 +297,7 @@ export async function updateTransactionType(
   revalidatePath(`/w/${workspaceId}/overview`);
 
   return {
-    successMessage: "Transaction type renamed successfully.",
+    successMessage: t("typeRenamed"),
   };
 }
 
@@ -291,13 +307,14 @@ export async function updateTransactionCategory(
   _previousState: CategoryFormState,
   formData: FormData,
 ): Promise<CategoryFormState> {
-  const user = await requireUser();
+  const [user, { schemas, t }] = await Promise.all([requireUser(), getCategoryActionContext()]);
+  const { CategoryDetailsSchema } = schemas;
 
   const categoryIdResult = v.safeParse(DatabaseIdSchema, categoryId);
 
   if (!categoryIdResult.success) {
     return {
-      formError: "This category is invalid.",
+      formError: t("invalidCategory"),
     };
   }
 
@@ -326,13 +343,13 @@ export async function updateTransactionCategory(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot edit categories.",
+      formError: t("cannotEditCategories"),
     };
   }
 
@@ -352,14 +369,14 @@ export async function updateTransactionCategory(
 
     if (updateResult.count === 0) {
       return {
-        formError: "This category is no longer available.",
+        formError: t("categoryUnavailable"),
       };
     }
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return {
         fieldErrors: {
-          name: ["A category with this name already exists in this type."],
+          name: [t("categoryDuplicate")],
         },
       };
     }
@@ -367,7 +384,7 @@ export async function updateTransactionCategory(
     console.error("Unable to update category:", error);
 
     return {
-      formError: "Unable to update this category. Please try again.",
+      formError: t("updateCategoryFailed"),
     };
   }
 
@@ -376,7 +393,7 @@ export async function updateTransactionCategory(
   revalidatePath(`/w/${workspaceId}/overview`);
 
   return {
-    successMessage: "Category updated successfully.",
+    successMessage: t("categoryUpdated"),
   };
 }
 
@@ -386,13 +403,13 @@ export async function deleteTransactionCategory(
   _previousState: DeleteCategoryItemFormState,
   _formData: FormData,
 ): Promise<DeleteCategoryItemFormState> {
-  const user = await requireUser();
+  const [user, { t }] = await Promise.all([requireUser(), getCategoryActionContext()]);
 
   const categoryIdResult = v.safeParse(DatabaseIdSchema, categoryId);
 
   if (!categoryIdResult.success) {
     return {
-      formError: "This category is invalid.",
+      formError: t("invalidCategory"),
     };
   }
 
@@ -455,38 +472,38 @@ export async function deleteTransactionCategory(
 
     if (outcome === "NO_ACCESS") {
       return {
-        formError: "You do not have access to this workspace.",
+        formError: t("noAccess"),
       };
     }
 
     if (outcome === "VIEWER") {
       return {
-        formError: "Your workspace role cannot delete categories.",
+        formError: t("cannotDeleteCategories"),
       };
     }
 
     if (outcome === "NOT_FOUND") {
       return {
-        formError: "This category is no longer available.",
+        formError: t("categoryUnavailable"),
       };
     }
 
     if (outcome === "IN_USE") {
       return {
-        formError: "This category cannot be deleted while financial activity references it.",
+        formError: t("categoryInUse"),
       };
     }
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
       return {
-        formError: "This category cannot be deleted while financial activity references it.",
+        formError: t("categoryInUse"),
       };
     }
 
     console.error("Unable to delete category:", error);
 
     return {
-      formError: "Unable to delete this category. Please try again.",
+      formError: t("deleteCategoryFailed"),
     };
   }
 
@@ -503,13 +520,13 @@ export async function deleteTransactionType(
   _previousState: DeleteCategoryItemFormState,
   _formData: FormData,
 ): Promise<DeleteCategoryItemFormState> {
-  const user = await requireUser();
+  const [user, { t }] = await Promise.all([requireUser(), getCategoryActionContext()]);
 
   const transactionTypeIdResult = v.safeParse(DatabaseIdSchema, transactionTypeId);
 
   if (!transactionTypeIdResult.success) {
     return {
-      formError: "This transaction type is invalid.",
+      formError: t("invalidType"),
     };
   }
 
@@ -569,38 +586,38 @@ export async function deleteTransactionType(
 
     if (outcome === "NO_ACCESS") {
       return {
-        formError: "You do not have access to this workspace.",
+        formError: t("noAccess"),
       };
     }
 
     if (outcome === "VIEWER") {
       return {
-        formError: "Your workspace role cannot delete transaction types.",
+        formError: t("cannotDeleteTypes"),
       };
     }
 
     if (outcome === "NOT_FOUND") {
       return {
-        formError: "This transaction type is no longer available.",
+        formError: t("typeUnavailable"),
       };
     }
 
     if (outcome === "IN_USE") {
       return {
-        formError: "This transaction type cannot be deleted while it contains categories.",
+        formError: t("typeContainsCategories"),
       };
     }
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
       return {
-        formError: "This transaction type cannot be deleted while it contains categories.",
+        formError: t("typeContainsCategories"),
       };
     }
 
     console.error("Unable to delete transaction type:", error);
 
     return {
-      formError: "Unable to delete this transaction type. Please try again.",
+      formError: t("deleteTypeFailed"),
     };
   }
 

@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-
 import { signOut } from "@/features/auth/actions";
+import { LocaleSwitcher } from "@/i18n/locale-switcher";
 
 type SelectedWorkspace = {
   id: string;
@@ -21,6 +22,8 @@ type AppShellProps = {
 };
 
 export function AppShell({ children, selectedWorkspace, userEmail }: AppShellProps) {
+  const t = useTranslations("AppShell");
+
   const pathname = usePathname();
 
   const effectivePathname =
@@ -48,34 +51,42 @@ export function AppShell({ children, selectedWorkspace, userEmail }: AppShellPro
 
   const navigation = [
     {
-      label: "Workspaces",
+      label: t("workspaces"),
       href: "/workspaces",
     },
     ...(selectedWorkspace
       ? [
           {
-            label: "Overview",
+            label: t("overview"),
             href: `/w/${selectedWorkspace.id}/overview`,
           },
           {
-            label: "Activity",
+            label: t("activity"),
             href: `/w/${selectedWorkspace.id}/activity`,
           },
           {
-            label: "Reports",
+            label: t("reports"),
             href: `/w/${selectedWorkspace.id}/reports`,
           },
           {
-            label: "Recurring",
+            label: t("recurring"),
             href: `/w/${selectedWorkspace.id}/recurring`,
           },
           {
-            label: "Settings",
+            label: t("settings"),
             href: `/w/${selectedWorkspace.id}/settings`,
           },
         ]
       : []),
   ];
+
+  const roleLabel = selectedWorkspace
+    ? ({
+        ADMIN: t("roles.admin"),
+        MEMBER: t("roles.member"),
+        VIEWER: t("roles.viewer"),
+      }[selectedWorkspace.role] ?? selectedWorkspace.role.toLowerCase())
+    : null;
 
   function closeMenu() {
     setMenuOpen(false);
@@ -85,7 +96,7 @@ export function AppShell({ children, selectedWorkspace, userEmail }: AppShellPro
     <div className="min-h-screen bg-zinc-100 text-zinc-950">
       {menuOpen && (
         <button
-          aria-label="Close navigation"
+          aria-label={t("closeNavigation")}
           className="fixed inset-0 z-40 bg-black/40 md:hidden"
           onClick={closeMenu}
           type="button"
@@ -93,7 +104,7 @@ export function AppShell({ children, selectedWorkspace, userEmail }: AppShellPro
       )}
 
       <aside
-        aria-label="Application navigation"
+        aria-label={t("applicationNavigation")}
         className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-zinc-200 bg-white transition-transform duration-200 md:translate-x-0 ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
@@ -106,7 +117,7 @@ export function AppShell({ children, selectedWorkspace, userEmail }: AppShellPro
             </Link>
 
             <button
-              aria-label="Close menu"
+              aria-label={t("closeMenu")}
               className="rounded-lg p-2 text-xl leading-none text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950 md:hidden"
               onClick={closeMenu}
               type="button"
@@ -120,13 +131,13 @@ export function AppShell({ children, selectedWorkspace, userEmail }: AppShellPro
               <p className="font-medium">{selectedWorkspace.name}</p>
 
               <p className="mt-1 text-sm text-zinc-500">
-                {selectedWorkspace.role.toLowerCase()}
+                {roleLabel}
                 {" · "}
                 {selectedWorkspace.currency}
               </p>
             </div>
           ) : (
-            <p className="mt-4 text-sm text-zinc-500">No workspace selected</p>
+            <p className="mt-4 text-sm text-zinc-500">{t("noWorkspaceSelected")}</p>
           )}
         </div>
 
@@ -151,6 +162,8 @@ export function AppShell({ children, selectedWorkspace, userEmail }: AppShellPro
         </nav>
 
         <div className="border-t border-zinc-200 p-3">
+          <LocaleSwitcher />
+
           <p className="truncate px-3 py-2 text-xs text-zinc-500">{userEmail}</p>
 
           <form action={signOut}>
@@ -158,7 +171,7 @@ export function AppShell({ children, selectedWorkspace, userEmail }: AppShellPro
               className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950"
               type="submit"
             >
-              Sign out
+              {t("signOut")}
             </button>
           </form>
         </div>
@@ -173,7 +186,7 @@ export function AppShell({ children, selectedWorkspace, userEmail }: AppShellPro
             onClick={() => setMenuOpen(true)}
             type="button"
           >
-            Menu
+            {t("menu")}
           </button>
 
           <p className="ml-3 truncate font-medium">{selectedWorkspace?.name ?? "Next Budget"}</p>

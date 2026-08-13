@@ -1,0 +1,242 @@
+{
+  "Common": {
+    "language": "Language",
+    "english": "English",
+    "greek": "Greek"
+  },
+  "AppShell": {
+    "applicationNavigation": "Application navigation",
+    "closeNavigation": "Close navigation",
+    "closeMenu": "Close menu",
+    "noWorkspaceSelected": "No workspace selected",
+    "workspaces": "Workspaces",
+    "overview": "Overview",
+    "activity": "Activity",
+    "reports": "Reports",
+    "recurring": "Recurring",
+    "settings": "Settings",
+    "signOut": "Sign out",
+    "menu": "Menu",
+    "roles": {
+      "admin": "admin",
+      "member": "member",
+      "viewer": "viewer"
+    }
+  },
+  "Categories": {
+    "title": "Transaction categories",
+    "description": "Organize income and expenses into types and categories.",
+    "readOnly": {
+      "title": "Read-only workspace",
+      "description": "Your viewer role does not allow category changes."
+    },
+    "createType": {
+      "title": "Create transaction type",
+      "description": "Add a top-level group for income or expense categories."
+    },
+    "groups": {
+      "income": {
+        "title": "Income types",
+        "description": "Groups used to classify money entering the workspace.",
+        "empty": "No income types yet."
+      },
+      "expense": {
+        "title": "Expense types",
+        "description": "Groups used to classify money leaving the workspace.",
+        "empty": "No expense types yet."
+      }
+    },
+    "counts": {
+      "categories": "{count, plural, =0 {0 categories} =1 {# category} other {# categories}}",
+      "transactions": "{count, plural, =0 {0 transactions} =1 {# transaction} other {# transactions}}",
+      "recurringItems": "{count, plural, =0 {0 recurring items} =1 {# recurring item} other {# recurring items}}"
+    },
+    "badges": {
+      "canDelete": "Can delete",
+      "hasCategories": "Has categories",
+      "inUse": "In use"
+    },
+    "forms": {
+      "typeName": "Type name",
+      "typePlaceholder": "Housing",
+      "direction": "Direction",
+      "selectDirection": "Select income or expense",
+      "income": "Income",
+      "expense": "Expense",
+      "directionHint": "Direction cannot be changed after the type is created.",
+      "createType": "Create transaction type",
+      "creatingType": "Creating type…",
+      "categoryName": "Category name",
+      "categoryPlaceholder": "Groceries",
+      "description": "Description",
+      "optional": "optional",
+      "descriptionPlaceholder": "Everyday food and supermarket purchases",
+      "addCategory": "Add category",
+      "creatingCategory": "Creating category…",
+      "createCategoryDescription": "Create a category under <strong>{typeName}</strong>.",
+      "closeCategoryDialog": "Close category dialog",
+      "renameType": "Rename type",
+      "renameTypeTitle": "Rename transaction type",
+      "renameTypeDescription": "Change the name of <strong>{typeName}</strong>.",
+      "closeRenameDialog": "Close rename dialog",
+      "saving": "Saving…",
+      "editCategory": "Edit category",
+      "saveCategory": "Save category",
+      "deleteCategory": "Delete category",
+      "deleteCategoryTitle": "Delete category?",
+      "deleteCategoryDescription": "<strong>{categoryName}</strong> will be permanently deleted. This action cannot be undone.",
+      "deleteType": "Delete type",
+      "deleteTypeTitle": "Delete transaction type?",
+      "deleteTypeDescription": "<strong>{typeName}</strong> will be permanently deleted. Its Income or Expense direction will also be lost. This action cannot be undone.",
+      "cancel": "Cancel",
+      "deleting": "Deleting…",
+      "deletePermanently": "Delete permanently"
+    },
+    "feedback": {
+      "validation": {
+        "nameRequired": "Please enter a name.",
+        "nameTooShort": "Name must contain at least 2 characters.",
+        "nameTooLong": "Name cannot exceed 60 characters.",
+        "descriptionTooLong": "Description cannot exceed 200 characters.",
+        "directionRequired": "Please select income or expense."
+      },
+      "noAccess": "You do not have access to this workspace.",
+      "cannotCreateTypes": "Your workspace role cannot create transaction types.",
+      "typeDuplicate": "A transaction type with this name already exists.",
+      "createTypeFailed": "Unable to create this transaction type. Please try again.",
+      "typeCreated": "Transaction type created successfully.",
+      "invalidType": "This transaction type is invalid.",
+      "cannotCreateCategories": "Your workspace role cannot create categories.",
+      "typeUnavailable": "This transaction type is no longer available.",
+      "categoryDuplicate": "A category with this name already exists in this type.",
+      "createCategoryFailed": "Unable to create this category. Please try again.",
+      "categoryCreated": "Category created successfully.",
+      "cannotRenameTypes": "Your workspace role cannot rename transaction types.",
+      "renameTypeFailed": "Unable to rename this transaction type. Please try again.",
+      "typeRenamed": "Transaction type renamed successfully.",
+      "invalidCategory": "This category is invalid.",
+      "cannotEditCategories": "Your workspace role cannot edit categories.",
+      "categoryUnavailable": "This category is no longer available.",
+      "updateCategoryFailed": "Unable to update this category. Please try again.",
+      "categoryUpdated": "Category updated successfully.",
+      "cannotDeleteCategories": "Your workspace role cannot delete categories.",
+      "categoryInUse": "This category cannot be deleted while financial activity references it.",
+      "deleteCategoryFailed": "Unable to delete this category. Please try again.",
+      "cannotDeleteTypes": "Your workspace role cannot delete transaction types.",
+      "typeContainsCategories": "This transaction type cannot be deleted while it contains categories.",
+      "deleteTypeFailed": "Unable to delete this transaction type. Please try again."
+    },
+    "emptyType": "No categories in this type yet.",
+    "categoryDeleteHint": "This category has no financial activity and can be permanently deleted.",
+    "typeDeleteHint": "This type has no categories and can be permanently deleted."
+  },
+  "Workspaces": {
+    "title": "Your workspaces",
+    "description": "Choose where you want to manage your finances.",
+    "emptyTitle": "No workspace yet",
+    "emptyDescription": "Create a workspace below or join one using its workspace ID.",
+    "createTitle": "Create a workspace",
+    "createDescription": "Create a personal or shared place for tracking finances.",
+    "joinTitle": "Join a workspace",
+    "joinDescription": "Enter the workspace ID shared with you.",
+    "roles": {
+      "admin": "admin",
+      "member": "member",
+      "viewer": "viewer"
+    },
+    "forms": {
+      "workspaceName": "Workspace name",
+      "workspaceNamePlaceholder": "Household",
+      "currency": "Currency",
+      "euro": "Euro (EUR)",
+      "usDollar": "US dollar (USD)",
+      "createWorkspace": "Create workspace",
+      "creatingWorkspace": "Creating workspace…",
+      "workspaceId": "Workspace ID",
+      "workspaceIdPlaceholder": "Paste the workspace ID",
+      "joinWorkspace": "Join workspace",
+      "joiningWorkspace": "Joining workspace…",
+      "copied": "Copied",
+      "copyId": "Copy ID",
+      "copySuccess": "Workspace ID copied to clipboard.",
+      "copyFailed": "Unable to copy the workspace ID."
+    }
+  },
+  "WorkspaceSettings": {
+    "title": "Settings",
+    "description": "Manage this workspace and its financial configuration.",
+    "readOnly": {
+      "title": "Read-only workspace",
+      "description": "Your viewer role does not allow workspace changes."
+    },
+    "links": {
+      "wallets": "Wallets",
+      "walletsDescription": "Review balances and manage workspace wallets.",
+      "categories": "Transaction categories",
+      "categoriesDescription": "Manage income and expense types and their categories."
+    },
+    "members": {
+      "title": "Members",
+      "description": "Everyone who currently has access to this workspace.",
+      "you": "You",
+      "joined": "Joined {date}",
+      "roles": {
+        "admin": "Admin",
+        "member": "Member",
+        "viewer": "Viewer"
+      }
+    },
+    "workspace": {
+      "title": "Workspace",
+      "description": "Review this workspace before renaming or deleting it.",
+      "name": "Name",
+      "currency": "Currency",
+      "members": "Members",
+      "created": "Created"
+    },
+    "references": {
+      "title": "Financial references",
+      "transactions": "{count, plural, =0 {0 transactions} =1 {# transaction} other {# transactions}}",
+      "transfers": "{count, plural, =0 {0 transfers} =1 {# transfer} other {# transfers}}",
+      "recurring": "{count, plural, =0 {0 recurring schedules} =1 {# recurring schedule} other {# recurring schedules}}",
+      "canDelete": "This workspace currently qualifies for deletion.",
+      "cannotDelete": "Remove all financial activity before deleting this workspace."
+    },
+    "rename": {
+      "title": "Rename workspace",
+      "description": "This name is shown to every workspace member."
+    },
+    "danger": {
+      "title": "Danger zone",
+      "description": "Permanently delete this workspace and its empty configuration."
+    },
+    "forms": {
+      "workspaceName": "Workspace name",
+      "renameWorkspace": "Rename workspace",
+      "renamingWorkspace": "Renaming workspace…",
+      "deleteWorkspace": "Delete workspace",
+      "deleteBlocked": "Delete all transactions, transfers, and recurring schedules before deleting this workspace.",
+      "deleteTitle": "Delete workspace?",
+      "deleteDescription": "<strong>{workspaceName}</strong>, its wallets, categories, and member access will be permanently deleted. This action cannot be undone.",
+      "cancel": "Cancel",
+      "deletingWorkspace": "Deleting workspace…",
+      "deletePermanently": "Delete permanently"
+    },
+    "feedback": {
+      "validation": {
+        "nameRequired": "Please enter a workspace name.",
+        "nameTooShort": "Name must contain at least 2 characters.",
+        "nameTooLong": "Name cannot exceed 60 characters."
+      },
+      "noAccess": "You do not have access to this workspace.",
+      "cannotRename": "Your workspace role cannot rename this workspace.",
+      "workspaceUnavailable": "This workspace is no longer available.",
+      "renameFailed": "Unable to rename this workspace. Please try again.",
+      "renamed": "Workspace renamed successfully.",
+      "cannotDelete": "Your workspace role cannot delete this workspace.",
+      "deleteFinancialActivityFirst": "Delete all transactions, transfers, and recurring schedules first.",
+      "recordsPreventDeletion": "This workspace still has records that prevent deletion.",
+      "deleteFailed": "Unable to delete this workspace. Please try again."
+    }
+  }
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState, useEffect, useRef } from "react";
 
 import { FormErrors } from "@/components/forms/form-errors";
@@ -12,6 +13,7 @@ type CreateTransactionTypeFormProps = {
 };
 
 export function CreateTransactionTypeForm({ workspaceId }: CreateTransactionTypeFormProps) {
+  const t = useTranslations("Categories.forms");
   const formRef = useRef<HTMLFormElement>(null);
 
   const createThisTransactionType = createTransactionType.bind(null, workspaceId);
@@ -31,7 +33,7 @@ export function CreateTransactionTypeForm({ workspaceId }: CreateTransactionType
     <form action={formAction} className="space-y-4" ref={formRef}>
       <div className="space-y-2">
         <label className="text-sm font-medium text-zinc-700" htmlFor="transactionTypeName">
-          Type name
+          {t("typeName")}
         </label>
 
         <input
@@ -42,7 +44,7 @@ export function CreateTransactionTypeForm({ workspaceId }: CreateTransactionType
           maxLength={60}
           minLength={2}
           name="name"
-          placeholder="Housing"
+          placeholder={t("typePlaceholder")}
           required
           type="text"
         />
@@ -52,7 +54,7 @@ export function CreateTransactionTypeForm({ workspaceId }: CreateTransactionType
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-zinc-700" htmlFor="transactionTypeDirection">
-          Direction
+          {t("direction")}
         </label>
 
         <select
@@ -65,16 +67,16 @@ export function CreateTransactionTypeForm({ workspaceId }: CreateTransactionType
           required
         >
           <option disabled value="">
-            Select income or expense
+            {t("selectDirection")}
           </option>
-          <option value="INCOME">Income</option>
-          <option value="EXPENSE">Expense</option>
+          <option value="INCOME">{t("income")}</option>
+          <option value="EXPENSE">{t("expense")}</option>
         </select>
 
         <FormErrors errors={directionErrors} id="transaction-type-direction-errors" />
       </div>
 
-      <p className="text-xs text-zinc-500">Direction cannot be changed after the type is created.</p>
+      <p className="text-xs text-zinc-500">{t("directionHint")}</p>
 
       {state.formError && (
         <p aria-live="polite" className="text-sm text-red-600" role="alert">
@@ -93,7 +95,7 @@ export function CreateTransactionTypeForm({ workspaceId }: CreateTransactionType
         disabled={pending}
         type="submit"
       >
-        {pending ? "Creating type…" : "Create transaction type"}
+        {pending ? t("creatingType") : t("createType")}
       </button>
     </form>
   );

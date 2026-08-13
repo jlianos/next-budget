@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState } from "react";
 
 import { RenameTransactionTypeForm } from "./rename-transaction-type";
@@ -15,6 +16,7 @@ export function RenameTransactionTypeDialog({
   transactionTypeId,
   currentName,
 }: RenameTransactionTypeDialogProps) {
+  const t = useTranslations("Categories.forms");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const [isOpen, setIsOpen] = useState(false);
@@ -52,7 +54,7 @@ export function RenameTransactionTypeDialog({
         onClick={() => setIsOpen(true)}
         type="button"
       >
-        Rename type
+        {t("renameType")}
       </button>
 
       <dialog
@@ -64,11 +66,11 @@ export function RenameTransactionTypeDialog({
         <div className="p-6">
           <div className="flex items-start justify-between gap-4">
             <h2 className="text-lg font-semibold text-zinc-950" id={titleId}>
-              Rename transaction type
+              {t("renameTypeTitle")}
             </h2>
 
             <button
-              aria-label="Close rename dialog"
+              aria-label={t("closeRenameDialog")}
               className="rounded-lg px-2 py-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
               onClick={() => setIsOpen(false)}
               type="button"
@@ -78,13 +80,15 @@ export function RenameTransactionTypeDialog({
           </div>
 
           <p className="mt-2 text-sm text-zinc-600">
-            Change the name of <strong>{currentName}</strong>.
+            {t.rich("renameTypeDescription", {
+              typeName: currentName,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </p>
 
           <div className="mt-5">
             <RenameTransactionTypeForm
               currentName={currentName}
-              onRenamed={() => setIsOpen(false)}
               transactionTypeId={transactionTypeId}
               workspaceId={workspaceId}
             />

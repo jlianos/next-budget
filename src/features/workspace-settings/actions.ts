@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import * as v from "valibot";
 
 import prisma from "@/db/prisma";
@@ -9,14 +10,25 @@ import { requireUser } from "@/features/auth/dal";
 import { deleteSelectedWorkspaceId, getSelectedWorkspaceId } from "@/features/workspaces/preference";
 import { Prisma, WorkspaceRole } from "@/generated/prisma/client";
 
-import { type DeleteWorkspaceState, RenameWorkspaceSchema, type RenameWorkspaceState } from "./validation";
+import { createRenameWorkspaceSchema, type DeleteWorkspaceState, type RenameWorkspaceState } from "./validation";
+
+async function getWorkspaceSettingsActionContext() {
+  const t = await getTranslations("WorkspaceSettings.feedback");
+  const RenameWorkspaceSchema = createRenameWorkspaceSchema({
+    nameRequired: t("validation.nameRequired"),
+    nameTooShort: t("validation.nameTooShort"),
+    nameTooLong: t("validation.nameTooLong"),
+  });
+
+  return { RenameWorkspaceSchema, t };
+}
 
 export async function renameWorkspace(
   workspaceId: string,
   _previousState: RenameWorkspaceState,
   formData: FormData,
 ): Promise<RenameWorkspaceState> {
-  const user = await requireUser();
+  const [user, { RenameWorkspaceSchema, t }] = await Promise.all([requireUser(), getWorkspaceSettingsActionContext()]);
 
   const result = v.safeParse(RenameWorkspaceSchema, {
     name: formData.get("name"),
@@ -42,13 +54,13 @@ export async function renameWorkspace(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot rename this workspace.",
+      formError: t("cannotRename"),
     };
   }
 
@@ -69,14 +81,14 @@ export async function renameWorkspace(
 
     if (updateResult.count !== 1) {
       return {
-        formError: "This workspace is no longer available.",
+        formError: t("workspaceUnavailable"),
       };
     }
   } catch (error) {
     console.error("Unable to rename workspace:", error);
 
     return {
-      formError: "Unable to rename this workspace. Please try again.",
+      formError: t("renameFailed"),
     };
   }
 
@@ -85,7 +97,7 @@ export async function renameWorkspace(
   revalidatePath("/workspaces");
 
   return {
-    successMessage: "Workspace renamed successfully.",
+    successMessage: t("renamed"),
   };
 }
 
@@ -94,7 +106,7 @@ export async function deleteWorkspace(
   _previousState: DeleteWorkspaceState,
   _formData: FormData,
 ): Promise<DeleteWorkspaceState> {
-  const user = await requireUser();
+  const [user, { t }] = await Promise.all([requireUser(), getWorkspaceSettingsActionContext()]);
 
   try {
     const outcome = await prisma.$transaction(async (tx) => {
@@ -227,38 +239,38 @@ export async function deleteWorkspace(
 
     if (outcome === "NO_ACCESS") {
       return {
-        formError: "You do not have access to this workspace.",
+        formError: t("noAccess"),
       };
     }
 
     if (outcome === "VIEWER") {
       return {
-        formError: "Your workspace role cannot delete this workspace.",
+        formError: t("cannotDelete"),
       };
     }
 
     if (outcome === "NOT_FOUND") {
       return {
-        formError: "This workspace is no longer available.",
+        formError: t("workspaceUnavailable"),
       };
     }
 
     if (outcome === "IN_USE") {
       return {
-        formError: "Delete all transactions, transfers, and recurring schedules first.",
+        formError: t("deleteFinancialActivityFirst"),
       };
     }
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
       return {
-        formError: "This workspace still has records that prevent deletion.",
+        formError: t("recordsPreventDeletion"),
       };
     }
 
     console.error("Unable to delete workspace:", error);
 
     return {
-      formError: "Unable to delete this workspace. Please try again.",
+      formError: t("deleteFailed"),
     };
   }
 

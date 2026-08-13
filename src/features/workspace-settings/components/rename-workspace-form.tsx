@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState, useId } from "react";
 
 import { FormErrors } from "@/components/forms/form-errors";
@@ -13,6 +14,7 @@ type RenameWorkspaceFormProps = {
 };
 
 export function RenameWorkspaceForm({ workspaceId, defaultName }: RenameWorkspaceFormProps) {
+  const t = useTranslations("WorkspaceSettings.forms");
   const nameId = useId();
   const nameErrorsId = `${nameId}-errors`;
 
@@ -26,7 +28,7 @@ export function RenameWorkspaceForm({ workspaceId, defaultName }: RenameWorkspac
     <form action={formAction} className="space-y-4">
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor={nameId}>
-          Workspace name
+          {t("workspaceName")}
         </label>
 
         <input
@@ -62,7 +64,7 @@ export function RenameWorkspaceForm({ workspaceId, defaultName }: RenameWorkspac
         disabled={pending}
         type="submit"
       >
-        {pending ? "Renaming workspace…" : "Rename workspace"}
+        {pending ? t("renamingWorkspace") : t("renameWorkspace")}
       </button>
     </form>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState, useRef } from "react";
 
 import { deleteTransactionCategory } from "../actions";
@@ -12,6 +13,7 @@ type DeleteCategoryFormProps = {
 };
 
 export function DeleteCategoryForm({ workspaceId, categoryId, categoryName }: DeleteCategoryFormProps) {
+  const t = useTranslations("Categories.forms");
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const deleteThisCategory = deleteTransactionCategory.bind(null, workspaceId, String(categoryId));
@@ -28,7 +30,7 @@ export function DeleteCategoryForm({ workspaceId, categoryId, categoryName }: De
         onClick={() => dialogRef.current?.showModal()}
         type="button"
       >
-        Delete category
+        {t("deleteCategory")}
       </button>
 
       <dialog
@@ -44,11 +46,14 @@ export function DeleteCategoryForm({ workspaceId, categoryId, categoryName }: De
       >
         <div className="p-6">
           <h2 className="text-lg font-semibold text-zinc-950" id={titleId}>
-            Delete category?
+            {t("deleteCategoryTitle")}
           </h2>
 
           <p className="mt-2 text-sm text-zinc-600" id={descriptionId}>
-            <strong>{categoryName}</strong> will be permanently deleted. This action cannot be undone.
+            {t.rich("deleteCategoryDescription", {
+              categoryName,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </p>
 
           {state.formError && (
@@ -64,7 +69,7 @@ export function DeleteCategoryForm({ workspaceId, categoryId, categoryName }: De
               onClick={() => dialogRef.current?.close()}
               type="button"
             >
-              Cancel
+              {t("cancel")}
             </button>
 
             <form action={formAction}>
@@ -73,7 +78,7 @@ export function DeleteCategoryForm({ workspaceId, categoryId, categoryName }: De
                 disabled={pending}
                 type="submit"
               >
-                {pending ? "Deleting…" : "Delete permanently"}
+                {pending ? t("deleting") : t("deletePermanently")}
               </button>
             </form>
           </div>

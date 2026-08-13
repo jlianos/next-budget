@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 
 import { FormErrors } from "@/components/forms/form-errors";
@@ -15,6 +16,7 @@ type EditCategoryFormProps = {
 };
 
 export function EditCategoryForm({ workspaceId, categoryId, currentName, currentDescription }: EditCategoryFormProps) {
+  const t = useTranslations("Categories.forms");
   const updateThisCategory = updateTransactionCategory.bind(null, workspaceId, String(categoryId));
 
   const [state, formAction, pending] = useActionState(updateThisCategory, initialCategoryFormState);
@@ -29,12 +31,12 @@ export function EditCategoryForm({ workspaceId, categoryId, currentName, current
 
   return (
     <details className="mt-4 border-t border-zinc-200 pt-3">
-      <summary className="cursor-pointer text-sm font-medium text-zinc-700">Edit category</summary>
+      <summary className="cursor-pointer text-sm font-medium text-zinc-700">{t("editCategory")}</summary>
 
       <form action={formAction} className="mt-4 space-y-3">
         <div className="space-y-2">
           <label className="text-sm font-medium text-zinc-700" htmlFor={nameId}>
-            Category name
+            {t("categoryName")}
           </label>
 
           <input
@@ -55,7 +57,7 @@ export function EditCategoryForm({ workspaceId, categoryId, currentName, current
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-zinc-700" htmlFor={descriptionId}>
-            Description <span className="text-zinc-500">(optional)</span>
+            {t("description")} <span className="text-zinc-500">({t("optional")})</span>
           </label>
 
           <textarea
@@ -88,7 +90,7 @@ export function EditCategoryForm({ workspaceId, categoryId, currentName, current
           disabled={pending}
           type="submit"
         >
-          {pending ? "Saving…" : "Save category"}
+          {pending ? t("saving") : t("saveCategory")}
         </button>
       </form>
     </details>

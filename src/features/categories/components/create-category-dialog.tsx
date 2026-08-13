@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState } from "react";
 
 import { CreateCategoryForm } from "./create-category-form";
@@ -17,6 +18,7 @@ export function CreateCategoryDialog({
   transactionTypeName,
   categoryCount,
 }: CreateCategoryDialogProps) {
+  const t = useTranslations("Categories.forms");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const previousCategoryCountRef = useRef(categoryCount);
   const titleId = useId();
@@ -54,7 +56,7 @@ export function CreateCategoryDialog({
         onClick={() => setIsOpen(true)}
         type="button"
       >
-        Add category
+        {t("addCategory")}
       </button>
 
       <dialog
@@ -67,16 +69,19 @@ export function CreateCategoryDialog({
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold text-zinc-950" id={titleId}>
-                Add category
+                {t("addCategory")}
               </h2>
 
               <p className="mt-1 text-sm text-zinc-600">
-                Create a category under <strong>{transactionTypeName}</strong>.
+                {t.rich("createCategoryDescription", {
+                  typeName: transactionTypeName,
+                  strong: (chunks) => <strong>{chunks}</strong>,
+                })}
               </p>
             </div>
 
             <button
-              aria-label="Close category dialog"
+              aria-label={t("closeCategoryDialog")}
               className="rounded-lg px-2 py-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
               onClick={() => setIsOpen(false)}
               type="button"

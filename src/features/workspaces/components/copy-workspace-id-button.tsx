@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 type CopyWorkspaceIdButtonProps = {
@@ -7,6 +8,7 @@ type CopyWorkspaceIdButtonProps = {
 };
 
 export function CopyWorkspaceIdButton({ workspaceId }: CopyWorkspaceIdButtonProps) {
+  const t = useTranslations("Workspaces.forms");
   const [copied, setCopied] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -28,12 +30,12 @@ export function CopyWorkspaceIdButton({ workspaceId }: CopyWorkspaceIdButtonProp
         onClick={copyWorkspaceId}
         type="button"
       >
-        {copied ? "Copied" : "Copy ID"}
+        {copied ? t("copied") : t("copyId")}
       </button>
 
       <span aria-live="polite" className="sr-only">
-        {copied && "Workspace ID copied to clipboard."}
-        {failed && "Unable to copy the workspace ID."}
+        {copied && t("copySuccess")}
+        {failed && t("copyFailed")}
       </span>
     </div>
   );

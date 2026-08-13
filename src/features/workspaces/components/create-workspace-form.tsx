@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 
 import { FormErrors } from "@/components/forms/form-errors";
@@ -8,6 +9,7 @@ import { createWorkspace } from "../actions";
 import { initialWorkspaceFormState } from "../validation";
 
 export function CreateWorkspaceForm() {
+  const t = useTranslations("Workspaces.forms");
   const [state, formAction, pending] = useActionState(createWorkspace, initialWorkspaceFormState);
 
   const nameErrors = state.fieldErrors?.name;
@@ -17,7 +19,7 @@ export function CreateWorkspaceForm() {
     <form action={formAction} className="mt-6 space-y-5">
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="workspaceName">
-          Workspace name
+          {t("workspaceName")}
         </label>
 
         <input
@@ -28,7 +30,7 @@ export function CreateWorkspaceForm() {
           maxLength={60}
           minLength={2}
           name="name"
-          placeholder="Household"
+          placeholder={t("workspaceNamePlaceholder")}
           required
           type="text"
         />
@@ -38,7 +40,7 @@ export function CreateWorkspaceForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="workspaceCurrency">
-          Currency
+          {t("currency")}
         </label>
 
         <select
@@ -50,8 +52,8 @@ export function CreateWorkspaceForm() {
           name="currency"
           required
         >
-          <option value="EUR">Euro (EUR)</option>
-          <option value="USD">US dollar (USD)</option>
+          <option value="EUR">{t("euro")}</option>
+          <option value="USD">{t("usDollar")}</option>
         </select>
 
         <FormErrors errors={currencyErrors} id="workspace-currency-errors" />
@@ -74,7 +76,7 @@ export function CreateWorkspaceForm() {
         disabled={pending}
         type="submit"
       >
-        {pending ? "Creating workspace…" : "Create workspace"}
+        {pending ? t("creatingWorkspace") : t("createWorkspace")}
       </button>
     </form>
   );

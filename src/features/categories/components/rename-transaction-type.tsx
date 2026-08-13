@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { FormErrors } from "@/components/forms/form-errors";
 
@@ -10,7 +11,6 @@ type RenameTransactionTypeFormProps = {
   workspaceId: string;
   transactionTypeId: number;
   currentName: string;
-  onRenamed?: () => void;
 };
 
 export function RenameTransactionTypeForm({
@@ -18,6 +18,7 @@ export function RenameTransactionTypeForm({
   transactionTypeId,
   currentName,
 }: RenameTransactionTypeFormProps) {
+  const t = useTranslations("Categories.forms");
   const updateThisTransactionType = updateTransactionType.bind(null, workspaceId, String(transactionTypeId));
 
   const [state, formAction, pending] = useActionState(updateThisTransactionType, initialTransactionTypeFormState);
@@ -30,7 +31,7 @@ export function RenameTransactionTypeForm({
     <form action={formAction} className="space-y-3">
       <div className="space-y-2">
         <label className="text-sm font-medium text-zinc-700" htmlFor={nameId}>
-          Type name
+          {t("typeName")}
         </label>
 
         <input
@@ -66,7 +67,7 @@ export function RenameTransactionTypeForm({
         disabled={pending}
         type="submit"
       >
-        {pending ? "Saving…" : "Rename type"}
+        {pending ? t("saving") : t("renameType")}
       </button>
     </form>
   );

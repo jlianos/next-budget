@@ -1,8 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTimeZone, getTranslations } from "next-intl/server";
 
 import "./globals.css";
+
+export const viewport: Viewport = {
+  themeColor: "#065f46",
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Metadata");
@@ -10,6 +14,15 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("title"),
     description: t("description"),
+    applicationName: "NextBudget",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: "NextBudget",
+    },
+    icons: {
+      apple: "/apple-touch-icon.png",
+    },
   };
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 
 import { FormErrors } from "@/components/forms/form-errors";
@@ -35,6 +36,7 @@ export function CreateRecurringTransactionForm({
   wallets,
   transactionTypes,
 }: CreateRecurringTransactionFormProps) {
+  const t = useTranslations("Recurring.form");
   const action = createRecurringTransaction.bind(null, workspaceId);
 
   const [state, formAction, pending] = useActionState(action, initialRecurringTransactionFormState);
@@ -55,7 +57,7 @@ export function CreateRecurringTransactionForm({
     <form action={formAction} className="space-y-5">
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="recurringAmount">
-          Amount ({currency})
+          {t("amount", { currency })}
         </label>
 
         <input
@@ -79,7 +81,7 @@ export function CreateRecurringTransactionForm({
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="recurringWallet">
-            Wallet
+            {t("wallet")}
           </label>
 
           <select
@@ -92,7 +94,7 @@ export function CreateRecurringTransactionForm({
             required
           >
             <option disabled value="">
-              Select a wallet
+              {t("selectWallet")}
             </option>
 
             {wallets.map((wallet) => (
@@ -107,7 +109,7 @@ export function CreateRecurringTransactionForm({
 
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="recurringCategory">
-            Category
+            {t("category")}
           </label>
 
           <select
@@ -120,11 +122,14 @@ export function CreateRecurringTransactionForm({
             required
           >
             <option disabled value="">
-              Select a category
+              {t("selectCategory")}
             </option>
 
             {transactionTypes.map((type) => (
-              <optgroup key={type.id} label={`${type.direction === "INCOME" ? "Income" : "Expense"} · ${type.name}`}>
+              <optgroup
+                key={type.id}
+                label={`${type.direction === "INCOME" ? t("income") : t("expense")} · ${type.name}`}
+              >
                 {type.transactionCategories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -141,7 +146,7 @@ export function CreateRecurringTransactionForm({
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="recurringFrequency">
-            Frequency
+            {t("frequency")}
           </label>
 
           <select
@@ -153,10 +158,10 @@ export function CreateRecurringTransactionForm({
             name="frequency"
             required
           >
-            <option value="DAILY">Daily</option>
-            <option value="WEEKLY">Weekly</option>
-            <option value="MONTHLY">Monthly</option>
-            <option value="YEARLY">Yearly</option>
+            <option value="DAILY">{t("daily")}</option>
+            <option value="WEEKLY">{t("weekly")}</option>
+            <option value="MONTHLY">{t("monthly")}</option>
+            <option value="YEARLY">{t("yearly")}</option>
           </select>
 
           <FormErrors errors={frequencyErrors} id="recurring-frequency-errors" />
@@ -164,7 +169,7 @@ export function CreateRecurringTransactionForm({
 
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="recurringInterval">
-            Repeat every
+            {t("repeatEvery")}
           </label>
 
           <input
@@ -188,7 +193,7 @@ export function CreateRecurringTransactionForm({
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="recurringStartsAt">
-            Starts
+            {t("starts")}
           </label>
 
           <input
@@ -208,8 +213,8 @@ export function CreateRecurringTransactionForm({
 
         <div className="space-y-2">
           <label className="text-sm font-medium" htmlFor="recurringEndsAt">
-            Ends
-            <span className="ml-1 font-normal text-zinc-500">(optional)</span>
+            {t("ends")}
+            <span className="ml-1 font-normal text-zinc-500">({t("optional")})</span>
           </label>
 
           <input
@@ -226,11 +231,7 @@ export function CreateRecurringTransactionForm({
         </div>
       </div>
 
-      {!formAvailable && (
-        <p className="text-sm text-amber-700">
-          This workspace needs at least one wallet and category before you can create a recurring schedule.
-        </p>
-      )}
+      {!formAvailable && <p className="text-sm text-amber-700">{t("unavailable")}</p>}
 
       {state.formError && (
         <p aria-live="polite" className="text-sm text-red-600" role="alert">
@@ -249,7 +250,7 @@ export function CreateRecurringTransactionForm({
         disabled={pending || !formAvailable}
         type="submit"
       >
-        {pending ? "Creating schedule…" : "Create schedule"}
+        {pending ? t("creating") : t("create")}
       </button>
     </form>
   );

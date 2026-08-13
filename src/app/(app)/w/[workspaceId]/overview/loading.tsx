@@ -1,4 +1,8 @@
-export default function OverviewLoading() {
+import { getTranslations } from "next-intl/server";
+
+export default async function OverviewLoading() {
+  const t = await getTranslations("Overview");
+
   return (
     <div aria-busy="true" className="animate-pulse space-y-6">
       <header className="space-y-2">
@@ -31,7 +35,7 @@ export default function OverviewLoading() {
         </section>
       ))}
 
-      <span className="sr-only">Loading your financial overview.</span>
+      <span className="sr-only">{t("loading")}</span>
     </div>
   );
 }

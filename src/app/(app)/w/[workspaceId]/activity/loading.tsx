@@ -1,4 +1,8 @@
-export default function ActivityLoading() {
+import { getTranslations } from "next-intl/server";
+
+export default async function ActivityLoading() {
+  const t = await getTranslations("Activity");
+
   return (
     <div aria-busy="true" className="animate-pulse space-y-6">
       <header className="space-y-2">
@@ -20,7 +24,7 @@ export default function ActivityLoading() {
         </div>
       </section>
 
-      <span className="sr-only">Loading workspace activity.</span>
+      <span className="sr-only">{t("loading")}</span>
     </div>
   );
 }

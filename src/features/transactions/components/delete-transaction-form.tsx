@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { deleteTransaction } from "../actions";
 import { initialDeleteTransactionState } from "../validation";
@@ -12,6 +13,7 @@ type DeleteTransactionFormProps = {
 };
 
 export function DeleteTransactionForm({ workspaceId, transactionId, recurring }: DeleteTransactionFormProps) {
+  const t = useTranslations("Transactions.delete");
   const [confirming, setConfirming] = useState(false);
 
   const deleteForWorkspace = deleteTransaction.bind(null, workspaceId, transactionId.toString());
@@ -25,7 +27,7 @@ export function DeleteTransactionForm({ workspaceId, transactionId, recurring }:
         onClick={() => setConfirming(true)}
         type="button"
       >
-        Delete transaction
+        {t("button")}
       </button>
     );
   }
@@ -33,13 +35,13 @@ export function DeleteTransactionForm({ workspaceId, transactionId, recurring }:
   return (
     <form action={formAction} className="space-y-4">
       <div>
-        <p className="font-medium text-red-800">Permanently delete this transaction?</p>
+        <p className="font-medium text-red-800">{t("title")}</p>
 
-        <p className="mt-1 text-sm text-red-700">This cannot be undone and will affect the workspace totals.</p>
+        <p className="mt-1 text-sm text-red-700">{t("description")}</p>
 
         {recurring && (
           <p className="mt-2 text-sm text-red-700">
-            The recurring schedule will remain active and may generate this occurrence again in the future.
+            {t("recurringNotice")}
           </p>
         )}
       </div>
@@ -56,7 +58,7 @@ export function DeleteTransactionForm({ workspaceId, transactionId, recurring }:
           disabled={pending}
           type="submit"
         >
-          {pending ? "Deleting transaction…" : "Delete permanently"}
+          {pending ? t("deleting") : t("confirm")}
         </button>
 
         <button
@@ -65,7 +67,7 @@ export function DeleteTransactionForm({ workspaceId, transactionId, recurring }:
           onClick={() => setConfirming(false)}
           type="button"
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </form>

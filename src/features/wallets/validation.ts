@@ -1,16 +1,24 @@
 import * as v from "valibot";
 
-export const WalletNameSchema = v.pipe(
-  v.string("Please enter a wallet name."),
-  v.trim(),
-  v.nonEmpty("Please enter a wallet name."),
-  v.minLength(2, "Wallet name must contain at least 2 characters."),
-  v.maxLength(60, "Wallet name cannot exceed 60 characters."),
-);
+type WalletValidationMessages = {
+  nameRequired: string;
+  nameTooShort: string;
+  nameTooLong: string;
+};
 
-export const CreateWalletSchema = v.object({
-  name: WalletNameSchema,
-});
+export function createWalletSchema(messages: WalletValidationMessages) {
+  const WalletNameSchema = v.pipe(
+    v.string(messages.nameRequired),
+    v.trim(),
+    v.nonEmpty(messages.nameRequired),
+    v.minLength(2, messages.nameTooShort),
+    v.maxLength(60, messages.nameTooLong),
+  );
+
+  return v.object({
+    name: WalletNameSchema,
+  });
+}
 
 export type WalletFormState = {
   fieldErrors?: {

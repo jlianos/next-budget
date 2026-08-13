@@ -22,6 +22,7 @@ export function CreateCategoryDialog({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const previousCategoryCountRef = useRef(categoryCount);
   const titleId = useId();
+  const descriptionId = useId();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
@@ -60,6 +61,7 @@ export function CreateCategoryDialog({
       </button>
 
       <dialog
+        aria-describedby={descriptionId}
         aria-labelledby={titleId}
         className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-zinc-200 bg-white p-0 shadow-2xl backdrop:bg-zinc-950/50"
         onClose={() => setIsOpen(false)}
@@ -72,7 +74,7 @@ export function CreateCategoryDialog({
                 {t("addCategory")}
               </h2>
 
-              <p className="mt-1 text-sm text-zinc-600">
+              <p className="mt-1 text-sm text-zinc-600" id={descriptionId}>
                 {t.rich("createCategoryDescription", {
                   typeName: transactionTypeName,
                   strong: (chunks) => <strong>{chunks}</strong>,

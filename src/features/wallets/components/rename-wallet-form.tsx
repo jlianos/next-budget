@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 
 import { FormErrors } from "@/components/forms/form-errors";
@@ -14,6 +15,7 @@ type RenameWalletFormProps = {
 };
 
 export function RenameWalletForm({ workspaceId, walletId, currentName }: RenameWalletFormProps) {
+  const t = useTranslations("Wallets.forms");
   const updateThisWallet = updateWallet.bind(null, workspaceId, String(walletId));
 
   const [state, formAction, pending] = useActionState(updateThisWallet, initialWalletFormState);
@@ -26,7 +28,7 @@ export function RenameWalletForm({ workspaceId, walletId, currentName }: RenameW
     <form action={formAction} className="space-y-3">
       <div className="space-y-2">
         <label className="text-sm font-medium text-zinc-700" htmlFor={inputId}>
-          Wallet name
+          {t("name")}
         </label>
 
         <input
@@ -62,7 +64,7 @@ export function RenameWalletForm({ workspaceId, walletId, currentName }: RenameW
         disabled={pending}
         type="submit"
       >
-        {pending ? "Saving…" : "Rename wallet"}
+        {pending ? t("saving") : t("rename")}
       </button>
     </form>
   );

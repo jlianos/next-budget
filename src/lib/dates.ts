@@ -55,8 +55,15 @@ export function getDateRange(from: string | undefined, to: string | undefined, n
   };
 }
 
-export function formatDateTime(value: string | Date) {
-  return dayjs(value).tz(APP_TIME_ZONE).format("D MMM YYYY, HH:mm");
+export function formatDateTime(value: string | Date, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
+    timeZone: APP_TIME_ZONE,
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
 export function parseDateTime(value: string) {

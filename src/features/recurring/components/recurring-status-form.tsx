@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 
 import { startRecurringTransaction, stopRecurringTransaction } from "../actions";
@@ -12,6 +13,7 @@ type RecurringStatusFormProps = {
 };
 
 export function RecurringStatusForm({ workspaceId, recurringTransactionId, isActive }: RecurringStatusFormProps) {
+  const t = useTranslations("Recurring.status");
   const statusAction = isActive
     ? stopRecurringTransaction.bind(null, workspaceId, recurringTransactionId.toString())
     : startRecurringTransaction.bind(null, workspaceId, recurringTransactionId.toString());
@@ -41,7 +43,7 @@ export function RecurringStatusForm({ workspaceId, recurringTransactionId, isAct
         disabled={pending}
         type="submit"
       >
-        {pending ? (isActive ? "Stopping…" : "Starting…") : isActive ? "Stop schedule" : "Start schedule"}
+        {pending ? (isActive ? t("stopping") : t("starting")) : isActive ? t("stop") : t("start")}
       </button>
     </form>
   );

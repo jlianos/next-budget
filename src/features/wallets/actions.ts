@@ -1,19 +1,31 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import * as v from "valibot";
 import prisma from "@/db/prisma";
 import { requireUser } from "@/features/auth/dal";
 import { Prisma, WorkspaceRole } from "@/generated/prisma/client";
 import { DatabaseIdSchema } from "@/lib/validation";
-import { CreateWalletSchema, type DeleteWalletFormState, type WalletFormState } from "./validation";
+import { createWalletSchema, type DeleteWalletFormState, type WalletFormState } from "./validation";
+
+async function getWalletActionContext() {
+  const t = await getTranslations("Wallets.feedback");
+  const schema = createWalletSchema({
+    nameRequired: t("validation.nameRequired"),
+    nameTooShort: t("validation.nameTooShort"),
+    nameTooLong: t("validation.nameTooLong"),
+  });
+
+  return { schema, t };
+}
 
 export async function createWallet(
   workspaceId: string,
   _previousState: WalletFormState,
   formData: FormData,
 ): Promise<WalletFormState> {
-  const user = await requireUser();
+  const [user, { schema: CreateWalletSchema, t }] = await Promise.all([requireUser(), getWalletActionContext()]);
 
   const result = v.safeParse(CreateWalletSchema, {
     name: formData.get("name"),
@@ -39,13 +51,13 @@ export async function createWallet(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot create wallets.",
+      formError: t("cannotCreate"),
     };
   }
 
@@ -60,7 +72,7 @@ export async function createWallet(
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return {
         fieldErrors: {
-          name: ["A wallet with this name already exists."],
+          name: [t("duplicate")],
         },
       };
     }
@@ -68,7 +80,7 @@ export async function createWallet(
     console.error("Unable to create wallet:", error);
 
     return {
-      formError: "Unable to create this wallet. Please try again.",
+      formError: t("createFailed"),
     };
   }
 
@@ -77,7 +89,7 @@ export async function createWallet(
   revalidatePath(`/w/${workspaceId}/activity`);
 
   return {
-    successMessage: "Wallet created successfully.",
+    successMessage: t("created"),
   };
 }
 
@@ -87,13 +99,13 @@ export async function updateWallet(
   _previousState: WalletFormState,
   formData: FormData,
 ): Promise<WalletFormState> {
-  const user = await requireUser();
+  const [user, { schema: CreateWalletSchema, t }] = await Promise.all([requireUser(), getWalletActionContext()]);
 
   const walletIdResult = v.safeParse(DatabaseIdSchema, walletId);
 
   if (!walletIdResult.success) {
     return {
-      formError: "This wallet is invalid.",
+      formError: t("invalidWallet"),
     };
   }
 
@@ -121,13 +133,13 @@ export async function updateWallet(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot rename wallets.",
+      formError: t("cannotRename"),
     };
   }
 
@@ -144,14 +156,14 @@ export async function updateWallet(
 
     if (updateResult.count === 0) {
       return {
-        formError: "This wallet is no longer available.",
+        formError: t("unavailable"),
       };
     }
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return {
         fieldErrors: {
-          name: ["A wallet with this name already exists."],
+          name: [t("duplicate")],
         },
       };
     }
@@ -159,7 +171,7 @@ export async function updateWallet(
     console.error("Unable to rename wallet:", error);
 
     return {
-      formError: "Unable to rename this wallet. Please try again.",
+      formError: t("renameFailed"),
     };
   }
 
@@ -168,7 +180,7 @@ export async function updateWallet(
   revalidatePath(`/w/${workspaceId}/activity`);
 
   return {
-    successMessage: "Wallet renamed successfully.",
+    successMessage: t("renamed"),
   };
 }
 
@@ -178,13 +190,13 @@ export async function deleteWallet(
   _previousState: DeleteWalletFormState,
   _formData: FormData,
 ): Promise<DeleteWalletFormState> {
-  const user = await requireUser();
+  const [user, t] = await Promise.all([requireUser(), getTranslations("Wallets.feedback")]);
 
   const walletIdResult = v.safeParse(DatabaseIdSchema, walletId);
 
   if (!walletIdResult.success) {
     return {
-      formError: "This wallet is invalid.",
+      formError: t("invalidWallet"),
     };
   }
 
@@ -253,38 +265,38 @@ export async function deleteWallet(
 
     if (outcome === "NO_ACCESS") {
       return {
-        formError: "You do not have access to this workspace.",
+        formError: t("noAccess"),
       };
     }
 
     if (outcome === "VIEWER") {
       return {
-        formError: "Your workspace role cannot delete wallets.",
+        formError: t("cannotDelete"),
       };
     }
 
     if (outcome === "NOT_FOUND") {
       return {
-        formError: "This wallet is no longer available.",
+        formError: t("unavailable"),
       };
     }
 
     if (outcome === "IN_USE") {
       return {
-        formError: "This wallet cannot be deleted while financial activity references it.",
+        formError: t("inUse"),
       };
     }
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003") {
       return {
-        formError: "This wallet cannot be deleted while financial activity references it.",
+        formError: t("inUse"),
       };
     }
 
     console.error("Unable to delete wallet:", error);
 
     return {
-      formError: "Unable to delete this wallet. Please try again.",
+      formError: t("deleteFailed"),
     };
   }
 

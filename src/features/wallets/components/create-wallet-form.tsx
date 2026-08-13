@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useActionState, useEffect, useRef } from "react";
 
 import { FormErrors } from "@/components/forms/form-errors";
@@ -12,6 +13,7 @@ type CreateWalletFormProps = {
 };
 
 export function CreateWalletForm({ workspaceId }: CreateWalletFormProps) {
+  const t = useTranslations("Wallets.forms");
   const formRef = useRef<HTMLFormElement>(null);
   const createThisWallet = createWallet.bind(null, workspaceId);
 
@@ -29,7 +31,7 @@ export function CreateWalletForm({ workspaceId }: CreateWalletFormProps) {
     <form action={formAction} className="space-y-4" ref={formRef}>
       <div className="space-y-2">
         <label className="text-sm font-medium text-zinc-700" htmlFor="walletName">
-          Wallet name
+          {t("name")}
         </label>
 
         <input
@@ -40,7 +42,7 @@ export function CreateWalletForm({ workspaceId }: CreateWalletFormProps) {
           maxLength={60}
           minLength={2}
           name="name"
-          placeholder="Main account"
+          placeholder={t("namePlaceholder")}
           required
           type="text"
         />
@@ -65,7 +67,7 @@ export function CreateWalletForm({ workspaceId }: CreateWalletFormProps) {
         disabled={pending}
         type="submit"
       >
-        {pending ? "Creating wallet…" : "Create wallet"}
+        {pending ? t("creating") : t("create")}
       </button>
     </form>
   );

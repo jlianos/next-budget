@@ -2,18 +2,28 @@
 
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import * as v from "valibot";
 import prisma from "@/db/prisma";
 import { requireUser } from "@/features/auth/dal";
 import { WorkspaceRole } from "@/generated/prisma/client";
 import { setSelectedWorkspaceId } from "./preference";
 
-import {
-  CreateWorkspaceSchema,
-  type JoinWorkspaceFormState,
-  JoinWorkspaceSchema,
-  type WorkspaceFormState,
-} from "./validation";
+import { createWorkspaceSchemas, type JoinWorkspaceFormState, type WorkspaceFormState } from "./validation";
+
+async function getWorkspaceActionContext() {
+  const t = await getTranslations("Workspaces.feedback");
+  const schemas = createWorkspaceSchemas({
+    nameRequired: t("validation.nameRequired"),
+    nameTooShort: t("validation.nameTooShort"),
+    nameTooLong: t("validation.nameTooLong"),
+    currencyRequired: t("validation.currencyRequired"),
+    idRequired: t("validation.idRequired"),
+    idInvalid: t("validation.idInvalid"),
+  });
+
+  return { schemas, t };
+}
 
 export async function selectWorkspace(workspaceId: string) {
   const user = await requireUser();
@@ -43,6 +53,8 @@ export async function createWorkspace(
   _previousState: WorkspaceFormState,
   formData: FormData,
 ): Promise<WorkspaceFormState> {
+  const { schemas, t } = await getWorkspaceActionContext();
+  const CreateWorkspaceSchema = schemas.create;
   const result = v.safeParse(CreateWorkspaceSchema, {
     name: formData.get("name"),
     currency: formData.get("currency"),
@@ -81,7 +93,7 @@ export async function createWorkspace(
     console.error("Unable to create workspace:", error);
 
     return {
-      formError: "Unable to create your workspace. Please try again.",
+      formError: t("createFailed"),
     };
   }
 
@@ -90,7 +102,7 @@ export async function createWorkspace(
   revalidatePath("/workspaces");
 
   return {
-    successMessage: "Workspace created successfully.",
+    successMessage: t("created"),
   };
 }
 
@@ -98,6 +110,8 @@ export async function joinWorkspace(
   _previousState: JoinWorkspaceFormState,
   formData: FormData,
 ): Promise<JoinWorkspaceFormState> {
+  const { schemas, t } = await getWorkspaceActionContext();
+  const JoinWorkspaceSchema = schemas.join;
   const result = v.safeParse(JoinWorkspaceSchema, {
     workspaceId: formData.get("workspaceId"),
   });
@@ -123,7 +137,7 @@ export async function joinWorkspace(
 
   if (!workspace) {
     return {
-      formError: "No workspace was found with this ID.",
+      formError: t("notFound"),
     };
   }
 
@@ -146,7 +160,7 @@ export async function joinWorkspace(
     console.error("Unable to join workspace:", error);
 
     return {
-      formError: "Unable to join this workspace. Please try again.",
+      formError: t("joinFailed"),
     };
   }
 
@@ -155,6 +169,6 @@ export async function joinWorkspace(
   revalidatePath("/workspaces");
 
   return {
-    successMessage: `You joined ${workspace.name}.`,
+    successMessage: t("joined", { workspaceName: workspace.name }),
   };
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import * as v from "valibot";
 import { requireUser } from "@/features/auth/dal";
 import { DeleteTransactionForm } from "@/features/transactions/components/delete-transaction-form";
@@ -17,7 +18,11 @@ type EditTransactionPageProps = {
 };
 
 export default async function EditTransactionPage({ params }: EditTransactionPageProps) {
-  const [user, { workspaceId, transactionId: rawTransactionId }] = await Promise.all([requireUser(), params]);
+  const [user, { workspaceId, transactionId: rawTransactionId }, t] = await Promise.all([
+    requireUser(),
+    params,
+    getTranslations("Transactions.edit"),
+  ]);
 
   const transactionIdResult = v.safeParse(DatabaseIdSchema, rawTransactionId);
 
@@ -46,18 +51,17 @@ export default async function EditTransactionPage({ params }: EditTransactionPag
     <div className="mx-auto max-w-2xl space-y-6">
       <header>
         <Link className="text-sm font-medium text-zinc-600 hover:text-zinc-950" href={`/w/${workspaceId}/activity`}>
-          ← Back to activity
+          {t("back")}
         </Link>
 
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Edit transaction</h1>
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
-        <p className="mt-2 text-zinc-600">Update the amount, wallet, category, or occurrence date.</p>
+        <p className="mt-2 text-zinc-600">{t("description")}</p>
       </header>
 
       {transaction.recurring && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          This is a generated recurring transaction. Editing it changes only this occurrence, not its recurring
-          schedule.
+          {t("recurringNotice")}
         </div>
       )}
 
@@ -80,10 +84,10 @@ export default async function EditTransactionPage({ params }: EditTransactionPag
 
       <section aria-labelledby="delete-transaction-heading" className="rounded-2xl border border-red-200 bg-red-50 p-6">
         <h2 className="text-lg font-semibold tracking-tight text-red-900" id="delete-transaction-heading">
-          Danger zone
+          {t("dangerTitle")}
         </h2>
 
-        <p className="mt-2 mb-5 text-sm text-red-700">Permanently remove this transaction from the workspace.</p>
+        <p className="mt-2 mb-5 text-sm text-red-700">{t("dangerDescription")}</p>
 
         <DeleteTransactionForm
           recurring={transaction.recurring}

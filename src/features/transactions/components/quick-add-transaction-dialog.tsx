@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useRef, useState } from "react";
 
 import { formatDateTimeInput } from "@/lib/dates";
@@ -34,6 +35,7 @@ export function QuickAddTransactionDialog({
   wallets,
   transactionTypes,
 }: QuickAddTransactionDialogProps) {
+  const t = useTranslations("Transactions.quickAdd");
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const [formKey, setFormKey] = useState(0);
@@ -53,16 +55,17 @@ export function QuickAddTransactionDialog({
     <>
       <button
         aria-haspopup="dialog"
-        aria-label="Add transaction"
+        aria-label={t("open")}
         className="fixed right-4 top-3 z-30 flex size-11 items-center justify-center rounded-full bg-zinc-900 text-2xl font-light leading-none text-white shadow-lg transition hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 md:right-8 md:top-6"
         onClick={openDialog}
-        title="Add transaction"
+        title={t("open")}
         type="button"
       >
         <span aria-hidden="true">+</span>
       </button>
 
       <dialog
+        aria-describedby="quick-add-transaction-description"
         aria-labelledby="quick-add-transaction-title"
         className="m-auto max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-lg overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-0 shadow-2xl backdrop:bg-zinc-950/50"
         ref={dialogRef}
@@ -71,14 +74,16 @@ export function QuickAddTransactionDialog({
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold tracking-tight text-zinc-950" id="quick-add-transaction-title">
-                Add transaction
+                {t("title")}
               </h2>
 
-              <p className="mt-1 text-sm text-zinc-600">Quickly record income or an expense.</p>
+              <p className="mt-1 text-sm text-zinc-600" id="quick-add-transaction-description">
+                {t("description")}
+              </p>
             </div>
 
             <button
-              aria-label="Close add transaction dialog"
+              aria-label={t("close")}
               className="rounded-lg p-2 text-xl leading-none text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950"
               onClick={closeDialog}
               type="button"

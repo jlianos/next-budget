@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { deleteTransfer } from "../actions";
 import { initialDeleteTransferState } from "../validation";
@@ -11,6 +12,7 @@ type DeleteTransferFormProps = {
 };
 
 export function DeleteTransferForm({ workspaceId, transferId }: DeleteTransferFormProps) {
+  const t = useTranslations("Transfers.delete");
   const [confirming, setConfirming] = useState(false);
 
   const deleteForWorkspace = deleteTransfer.bind(null, workspaceId, transferId.toString());
@@ -24,7 +26,7 @@ export function DeleteTransferForm({ workspaceId, transferId }: DeleteTransferFo
         onClick={() => setConfirming(true)}
         type="button"
       >
-        Delete transfer
+        {t("button")}
       </button>
     );
   }
@@ -32,9 +34,9 @@ export function DeleteTransferForm({ workspaceId, transferId }: DeleteTransferFo
   return (
     <form action={formAction} className="space-y-4">
       <div>
-        <p className="font-medium text-red-800">Permanently delete this transfer?</p>
+        <p className="font-medium text-red-800">{t("title")}</p>
 
-        <p className="mt-1 text-sm text-red-700">This cannot be undone and will change both wallet balances.</p>
+        <p className="mt-1 text-sm text-red-700">{t("description")}</p>
       </div>
 
       {state.formError && (
@@ -49,7 +51,7 @@ export function DeleteTransferForm({ workspaceId, transferId }: DeleteTransferFo
           disabled={pending}
           type="submit"
         >
-          {pending ? "Deleting transfer…" : "Delete permanently"}
+          {pending ? t("deleting") : t("confirm")}
         </button>
 
         <button
@@ -58,7 +60,7 @@ export function DeleteTransferForm({ workspaceId, transferId }: DeleteTransferFo
           onClick={() => setConfirming(false)}
           type="button"
         >
-          Cancel
+          {t("cancel")}
         </button>
       </div>
     </form>

@@ -332,6 +332,8 @@ Current status: transaction type and category management, workspace settings, an
 - Production database and deployment strategy; SQLite suitability must be reassessed for the intended hosting model and concurrency.
 - Logging, error reporting, backup, and recovery plan.
 
+Current status: English and Greek localization is complete across the current V1 screens, forms, validation, Server Action feedback, metadata, dates, money, chart labels, and accessibility text. Both catalogs are structurally aligned, and the rendered desktop/mobile audit passes without horizontal overflow. The remaining Phase 8 work is testing, broader accessibility and keyboard review, performance, deployment, and operational readiness.
+
 ## Testing priorities
 
 1. Workspace isolation and role enforcement.

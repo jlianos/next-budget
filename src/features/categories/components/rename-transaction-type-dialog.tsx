@@ -19,6 +19,7 @@ export function RenameTransactionTypeDialog({
   const t = useTranslations("Categories.forms");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
+  const descriptionId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const previousNameRef = useRef(currentName);
 
@@ -58,6 +59,7 @@ export function RenameTransactionTypeDialog({
       </button>
 
       <dialog
+        aria-describedby={descriptionId}
         aria-labelledby={titleId}
         className="m-auto w-[calc(100%-2rem)] max-w-md rounded-2xl border border-zinc-200 bg-white p-0 shadow-2xl backdrop:bg-zinc-950/50"
         onClose={() => setIsOpen(false)}
@@ -79,7 +81,7 @@ export function RenameTransactionTypeDialog({
             </button>
           </div>
 
-          <p className="mt-2 text-sm text-zinc-600">
+          <p className="mt-2 text-sm text-zinc-600" id={descriptionId}>
             {t.rich("renameTypeDescription", {
               typeName: currentName,
               strong: (chunks) => <strong>{chunks}</strong>,

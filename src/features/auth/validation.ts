@@ -1,50 +1,65 @@
 import * as v from "valibot";
 
-const EmailSchema = v.pipe(
-  v.string("Please enter your email."),
-  v.trim(),
-  v.nonEmpty("Please enter your email."),
-  v.email("Please enter a valid email."),
-  v.maxLength(254, "Email is too long."),
-  v.toLowerCase(),
-);
+type AuthValidationMessages = {
+  emailRequired: string;
+  emailInvalid: string;
+  emailTooLong: string;
+  passwordRequired: string;
+  signInPasswordRequired: string;
+  passwordTooShort: string;
+  passwordTooLong: string;
+  confirmPasswordRequired: string;
+  passwordsDoNotMatch: string;
+};
 
-const SignUpPasswordSchema = v.pipe(
-  v.string("Please enter a password."),
-  v.nonEmpty("Please enter a password."),
-  v.minLength(12, "Password must contain at least 12 characters."),
-  v.maxBytes(72, "Password is too long."),
-);
+export function createAuthSchemas(messages: AuthValidationMessages) {
+  const EmailSchema = v.pipe(
+    v.string(messages.emailRequired),
+    v.trim(),
+    v.nonEmpty(messages.emailRequired),
+    v.email(messages.emailInvalid),
+    v.maxLength(254, messages.emailTooLong),
+    v.toLowerCase(),
+  );
 
-const SignInPasswordSchema = v.pipe(
-  v.string("Please enter your password."),
-  v.nonEmpty("Please enter your password."),
-  v.maxBytes(72, "Password is too long."),
-);
+  const SignUpPasswordSchema = v.pipe(
+    v.string(messages.passwordRequired),
+    v.nonEmpty(messages.passwordRequired),
+    v.minLength(12, messages.passwordTooShort),
+    v.maxBytes(72, messages.passwordTooLong),
+  );
 
-export const SignUpSchema = v.pipe(
-  v.object({
-    email: EmailSchema,
-    password: SignUpPasswordSchema,
-    confirmPassword: v.pipe(v.string("Please confirm your password."), v.nonEmpty("Please confirm your password.")),
-  }),
-  v.forward(
-    v.partialCheck(
-      [["password"], ["confirmPassword"]],
-      ({ password, confirmPassword }) => password === confirmPassword,
-      "Passwords do not match.",
+  const SignInPasswordSchema = v.pipe(
+    v.string(messages.signInPasswordRequired),
+    v.nonEmpty(messages.signInPasswordRequired),
+    v.maxBytes(72, messages.passwordTooLong),
+  );
+
+  return {
+    SignUpSchema: v.pipe(
+      v.object({
+        email: EmailSchema,
+        password: SignUpPasswordSchema,
+        confirmPassword: v.pipe(
+          v.string(messages.confirmPasswordRequired),
+          v.nonEmpty(messages.confirmPasswordRequired),
+        ),
+      }),
+      v.forward(
+        v.partialCheck(
+          [["password"], ["confirmPassword"]],
+          ({ password, confirmPassword }) => password === confirmPassword,
+          messages.passwordsDoNotMatch,
+        ),
+        ["confirmPassword"],
+      ),
     ),
-    ["confirmPassword"],
-  ),
-);
-
-export const SignInSchema = v.object({
-  email: EmailSchema,
-  password: SignInPasswordSchema,
-});
-
-export type SignUpInput = v.InferOutput<typeof SignUpSchema>;
-export type SignInInput = v.InferOutput<typeof SignInSchema>;
+    SignInSchema: v.object({
+      email: EmailSchema,
+      password: SignInPasswordSchema,
+    }),
+  };
+}
 
 export type AuthField = "email" | "password" | "confirmPassword";
 

@@ -1,8 +1,7 @@
 "use client";
 
+import { useFormatter, useTranslations } from "next-intl";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-
-import { formatMoney } from "@/lib/money";
 
 type ExpenseBreakdownChartProps = {
   currency: string;
@@ -14,6 +13,8 @@ type ExpenseBreakdownChartProps = {
 };
 
 export function ExpenseBreakdownChart({ currency, data }: ExpenseBreakdownChartProps) {
+  const format = useFormatter();
+  const t = useTranslations("Reports.charts");
   const chartData = data.map((item) => ({
     ...item,
     amount: Number(item.amount),
@@ -44,10 +45,10 @@ export function ExpenseBreakdownChart({ currency, data }: ExpenseBreakdownChartP
               fontSize: 12,
             }}
             tickFormatter={(value: number) =>
-              new Intl.NumberFormat("en", {
+              format.number(value, {
                 notation: "compact",
                 maximumFractionDigits: 1,
-              }).format(value)
+              })
             }
             tickLine={false}
             type="number"
@@ -74,11 +75,11 @@ export function ExpenseBreakdownChart({ currency, data }: ExpenseBreakdownChartP
             formatter={(value) => {
               const amount = Array.isArray(value) ? (value[0] ?? 0) : value;
 
-              return [formatMoney(amount, currency), "Expenses"];
+              return [format.number(Number(amount), { style: "currency", currency }), t("expenses")];
             }}
           />
 
-          <Bar dataKey="amount" fill="#dc2626" isAnimationActive={false} name="Expenses" radius={[0, 4, 4, 0]} />
+          <Bar dataKey="amount" fill="#dc2626" isAnimationActive={false} name={t("expenses")} radius={[0, 4, 4, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

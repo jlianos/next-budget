@@ -1,17 +1,38 @@
 import * as v from "valibot";
 
-export const WorkspaceNameSchema = v.pipe(
-  v.string("Please enter a workspace name."),
-  v.trim(),
-  v.nonEmpty("Please enter a workspace name."),
-  v.minLength(2, "Name must contain at least 2 characters."),
-  v.maxLength(60, "Name cannot exceed 60 characters."),
-);
+type WorkspaceValidationMessages = {
+  nameRequired: string;
+  nameTooShort: string;
+  nameTooLong: string;
+  currencyRequired: string;
+  idRequired: string;
+  idInvalid: string;
+};
 
-export const CreateWorkspaceSchema = v.object({
-  name: WorkspaceNameSchema,
-  currency: v.picklist(["EUR", "USD"], "Please select a supported currency."),
-});
+export function createWorkspaceSchemas(messages: WorkspaceValidationMessages) {
+  const WorkspaceNameSchema = v.pipe(
+    v.string(messages.nameRequired),
+    v.trim(),
+    v.nonEmpty(messages.nameRequired),
+    v.minLength(2, messages.nameTooShort),
+    v.maxLength(60, messages.nameTooLong),
+  );
+
+  return {
+    create: v.object({
+      name: WorkspaceNameSchema,
+      currency: v.picklist(["EUR", "USD"], messages.currencyRequired),
+    }),
+    join: v.object({
+      workspaceId: v.pipe(
+        v.string(messages.idRequired),
+        v.trim(),
+        v.nonEmpty(messages.idRequired),
+        v.maxLength(100, messages.idInvalid),
+      ),
+    }),
+  };
+}
 
 export type WorkspaceField = "name" | "currency";
 
@@ -22,15 +43,6 @@ export type WorkspaceFormState = {
 };
 
 export const initialWorkspaceFormState: WorkspaceFormState = {};
-
-export const JoinWorkspaceSchema = v.object({
-  workspaceId: v.pipe(
-    v.string("Please enter a workspace ID."),
-    v.trim(),
-    v.nonEmpty("Please enter a workspace ID."),
-    v.maxLength(100, "The workspace ID is invalid."),
-  ),
-});
 
 export type JoinWorkspaceFormState = {
   fieldErrors?: {

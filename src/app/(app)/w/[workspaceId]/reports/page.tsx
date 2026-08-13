@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { requireUser } from "@/features/auth/dal";
 import { CashFlowChart } from "@/features/reports/components/cash-flow-chart";
 import { ExpenseBreakdownChart } from "@/features/reports/components/expense-breakdown-chart";
 import { getWorkspaceReports } from "@/features/reports/queries";
 import { getDateRange } from "@/lib/dates";
-import { formatMoney } from "@/lib/money";
 
 type ReportsPageProps = {
   params: Promise<{
@@ -49,7 +49,13 @@ function getWalletActivityHref(workspaceId: string, from: string, to: string, wa
 }
 
 export default async function ReportsPage({ params, searchParams }: ReportsPageProps) {
-  const [user, { workspaceId }, query] = await Promise.all([requireUser(), params, searchParams]);
+  const [user, { workspaceId }, query, t, format] = await Promise.all([
+    requireUser(),
+    params,
+    searchParams,
+    getTranslations("Reports"),
+    getFormatter(),
+  ]);
 
   const dateRange = getDateRange(getFirstValue(query.from), getFirstValue(query.to));
 
@@ -80,12 +86,27 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
     amount: category.amount,
   }));
 
+  const formatCurrency = (amount: string) =>
+    format.number(Number(amount), {
+      style: "currency",
+      currency: reports.currency,
+    });
+
+  const trend = reports.trend.map((bucket) => ({
+    ...bucket,
+    label: format.dateTime(new Date(`${bucket.key}${reports.trendGranularity === "month" ? "-01" : ""}T12:00:00Z`), {
+      day: reports.trendGranularity === "day" ? "numeric" : undefined,
+      month: "short",
+      year: reports.trendGranularity === "month" ? "numeric" : undefined,
+    }),
+  }));
+
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Reports</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
-        <p className="mt-2 text-zinc-600">Review income, expenses, and net cash flow over time.</p>
+        <p className="mt-2 text-zinc-600">{t("description")}</p>
       </header>
 
       <form
@@ -93,7 +114,7 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
         method="get"
       >
         <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700">
-          From
+          {t("filters.from")}
           <input
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2"
             defaultValue={dateRange.from}
@@ -103,7 +124,7 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
         </label>
 
         <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700">
-          To
+          {t("filters.to")}
           <input
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2"
             defaultValue={dateRange.to}
@@ -113,30 +134,28 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
         </label>
 
         <button className="rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white hover:bg-zinc-700" type="submit">
-          Apply
+          {t("filters.apply")}
         </button>
       </form>
 
-      <section aria-label="Selected period summary" className="grid gap-4 sm:grid-cols-3">
+      <section aria-label={t("summary.label")} className="grid gap-4 sm:grid-cols-3">
         <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-zinc-500">Income</p>
+          <p className="text-sm font-medium text-zinc-500">{t("summary.income")}</p>
 
-          <p className="mt-2 text-2xl font-semibold text-emerald-700">
-            {formatMoney(reports.income, reports.currency)}
-          </p>
+          <p className="mt-2 text-2xl font-semibold text-emerald-700">{formatCurrency(reports.income)}</p>
         </article>
 
         <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-zinc-500">Expenses</p>
+          <p className="text-sm font-medium text-zinc-500">{t("summary.expenses")}</p>
 
-          <p className="mt-2 text-2xl font-semibold text-red-700">{formatMoney(reports.expenses, reports.currency)}</p>
+          <p className="mt-2 text-2xl font-semibold text-red-700">{formatCurrency(reports.expenses)}</p>
         </article>
 
         <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-zinc-500">Net cash flow</p>
+          <p className="text-sm font-medium text-zinc-500">{t("summary.net")}</p>
 
           <p className={`mt-2 text-2xl font-semibold ${negativeNet ? "text-red-700" : "text-zinc-950"}`}>
-            {formatMoney(reports.net, reports.currency)}
+            {formatCurrency(reports.net)}
           </p>
         </article>
       </section>
@@ -147,23 +166,21 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
       >
         <div className="mb-5">
           <h2 className="text-lg font-semibold tracking-tight" id="cash-flow-heading">
-            Cash flow over time
+            {t("cashFlow.title")}
           </h2>
 
           <p className="mt-1 text-sm text-zinc-600">
-            {reports.trendGranularity === "day"
-              ? "Daily totals for the selected period."
-              : "Monthly totals for the selected period."}
+            {reports.trendGranularity === "day" ? t("cashFlow.dailyDescription") : t("cashFlow.monthlyDescription")}
           </p>
         </div>
 
         {hasActivity ? (
-          <CashFlowChart currency={reports.currency} data={reports.trend} />
+          <CashFlowChart currency={reports.currency} data={trend} />
         ) : (
           <div className="rounded-xl border border-dashed border-zinc-300 p-8 text-center">
-            <p className="font-medium text-zinc-950">No financial activity in this period</p>
+            <p className="font-medium text-zinc-950">{t("cashFlow.emptyTitle")}</p>
 
-            <p className="mt-1 text-sm text-zinc-600">Select another date range or record income and expenses.</p>
+            <p className="mt-1 text-sm text-zinc-600">{t("cashFlow.emptyDescription")}</p>
           </div>
         )}
       </section>
@@ -171,13 +188,10 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
       <section aria-labelledby="wallet-flow-heading" className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold tracking-tight" id="wallet-flow-heading">
-            Wallet movement
+            {t("wallets.title")}
           </h2>
 
-          <p className="mt-1 text-sm text-zinc-600">
-            Selected-period changes including income, expenses, and transfers. These are period movements, not all-time
-            balances.
-          </p>
+          <p className="mt-1 text-sm text-zinc-600">{t("wallets.description")}</p>
         </div>
 
         {reports.walletFlows.length > 0 ? (
@@ -196,7 +210,7 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
                       <div>
                         <h3 className="font-semibold text-zinc-950">{wallet.name}</h3>
 
-                        <p className="mt-1 text-xs text-zinc-500">Net change</p>
+                        <p className="mt-1 text-xs text-zinc-500">{t("wallets.netChange")}</p>
                       </div>
 
                       <p
@@ -204,41 +218,33 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
                           negative ? "text-red-700" : positive ? "text-emerald-700" : "text-zinc-950"
                         }`}
                       >
-                        {formatMoney(wallet.netChange, reports.currency)}
+                        {formatCurrency(wallet.netChange)}
                       </p>
                     </div>
 
                     <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-zinc-200 pt-4 text-sm">
                       <div>
-                        <dt className="text-zinc-500">Income</dt>
+                        <dt className="text-zinc-500">{t("summary.income")}</dt>
 
-                        <dd className="mt-1 font-medium text-emerald-700">
-                          {formatMoney(wallet.income, reports.currency)}
-                        </dd>
+                        <dd className="mt-1 font-medium text-emerald-700">{formatCurrency(wallet.income)}</dd>
                       </div>
 
                       <div>
-                        <dt className="text-zinc-500">Expenses</dt>
+                        <dt className="text-zinc-500">{t("summary.expenses")}</dt>
 
-                        <dd className="mt-1 font-medium text-red-700">
-                          {formatMoney(wallet.expenses, reports.currency)}
-                        </dd>
+                        <dd className="mt-1 font-medium text-red-700">{formatCurrency(wallet.expenses)}</dd>
                       </div>
 
                       <div>
-                        <dt className="text-zinc-500">Transfers in</dt>
+                        <dt className="text-zinc-500">{t("wallets.transfersIn")}</dt>
 
-                        <dd className="mt-1 font-medium text-zinc-950">
-                          {formatMoney(wallet.incomingTransfers, reports.currency)}
-                        </dd>
+                        <dd className="mt-1 font-medium text-zinc-950">{formatCurrency(wallet.incomingTransfers)}</dd>
                       </div>
 
                       <div>
-                        <dt className="text-zinc-500">Transfers out</dt>
+                        <dt className="text-zinc-500">{t("wallets.transfersOut")}</dt>
 
-                        <dd className="mt-1 font-medium text-zinc-950">
-                          {formatMoney(wallet.outgoingTransfers, reports.currency)}
-                        </dd>
+                        <dd className="mt-1 font-medium text-zinc-950">{formatCurrency(wallet.outgoingTransfers)}</dd>
                       </div>
                     </dl>
                   </Link>
@@ -248,19 +254,19 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
           </ul>
         ) : (
           <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-6 text-center">
-            <p className="font-medium text-zinc-950">No wallets in this workspace</p>
+            <p className="font-medium text-zinc-950">{t("wallets.emptyTitle")}</p>
 
-            <p className="mt-1 text-sm text-zinc-600">Create a wallet before recording financial activity.</p>
+            <p className="mt-1 text-sm text-zinc-600">{t("wallets.emptyDescription")}</p>
           </div>
         )}
       </section>
 
-      <section aria-label="Expense breakdowns" className="grid items-start gap-6 xl:grid-cols-2">
+      <section aria-label={t("breakdowns.label")} className="grid items-start gap-6 xl:grid-cols-2">
         <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
           <div className="mb-5">
-            <h2 className="text-lg font-semibold tracking-tight">Expenses by type</h2>
+            <h2 className="text-lg font-semibold tracking-tight">{t("breakdowns.byTypeTitle")}</h2>
 
-            <p className="mt-1 text-sm text-zinc-600">The largest expense groups in the selected period.</p>
+            <p className="mt-1 text-sm text-zinc-600">{t("breakdowns.byTypeDescription")}</p>
           </div>
 
           {expenseTypeChartData.length > 0 ? (
@@ -276,7 +282,7 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
                     >
                       <span className="font-medium">{type.name}</span>
 
-                      <span>{formatMoney(type.amount, reports.currency)}</span>
+                      <span>{formatCurrency(type.amount)}</span>
                     </Link>
                   </li>
                 ))}
@@ -284,16 +290,16 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
             </>
           ) : (
             <p className="rounded-xl border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-600">
-              No expenses in this period.
+              {t("breakdowns.empty")}
             </p>
           )}
         </article>
 
         <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
           <div className="mb-5">
-            <h2 className="text-lg font-semibold tracking-tight">Expenses by category</h2>
+            <h2 className="text-lg font-semibold tracking-tight">{t("breakdowns.byCategoryTitle")}</h2>
 
-            <p className="mt-1 text-sm text-zinc-600">The ten largest expense categories in the selected period.</p>
+            <p className="mt-1 text-sm text-zinc-600">{t("breakdowns.byCategoryDescription")}</p>
           </div>
 
           {expenseCategoryChartData.length > 0 ? (
@@ -313,7 +319,7 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
                         <span className="ml-2 text-zinc-500">{category.typeName}</span>
                       </span>
 
-                      <span>{formatMoney(category.amount, reports.currency)}</span>
+                      <span>{formatCurrency(category.amount)}</span>
                     </Link>
                   </li>
                 ))}
@@ -321,7 +327,7 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
             </>
           ) : (
             <p className="rounded-xl border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-600">
-              No expenses in this period.
+              {t("breakdowns.empty")}
             </p>
           )}
         </article>

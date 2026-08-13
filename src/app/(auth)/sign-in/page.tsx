@@ -1,21 +1,28 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
 import { SignInForm } from "@/features/auth/components/sign-in-form";
 
-export const metadata: Metadata = {
-  title: "Sign in",
-  description: "Sign in to your expense tracker.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Auth.signIn");
 
-export default function SignInPage() {
+  return {
+    title: t("metadataTitle"),
+    description: t("metadataDescription"),
+  };
+}
+
+export default async function SignInPage() {
+  const t = await getTranslations("Auth");
+
   return (
     <div className="space-y-6">
       <header className="space-y-2">
-        <p className="text-sm font-medium text-zinc-500">Next Budget</p>
+        <p className="text-sm font-medium text-zinc-500">{t("brand")}</p>
 
-        <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("signIn.title")}</h1>
 
-        <p className="text-sm text-zinc-600">Sign in to continue managing your finances.</p>
+        <p className="text-sm text-zinc-600">{t("signIn.description")}</p>
       </header>
 
       <SignInForm />

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import * as v from "valibot";
 import { requireUser } from "@/features/auth/dal";
 import { DeleteTransferForm } from "@/features/transfers/components/delete-transfer-form";
@@ -17,7 +18,9 @@ type EditTransferPageProps = {
 };
 
 export default async function EditTransferPage({ params }: EditTransferPageProps) {
-  const [user, { workspaceId, transferId: rawTransferId }] = await Promise.all([requireUser(), params]);
+  const [user, { workspaceId, transferId: rawTransferId }, t] = await Promise.all([
+    requireUser(), params, getTranslations("Transfers.edit"),
+  ]);
 
   const transferIdResult = v.safeParse(DatabaseIdSchema, rawTransferId);
 
@@ -46,12 +49,12 @@ export default async function EditTransferPage({ params }: EditTransferPageProps
     <div className="mx-auto max-w-2xl space-y-6">
       <header>
         <Link className="text-sm font-medium text-zinc-600 hover:text-zinc-950" href={`/w/${workspaceId}/activity`}>
-          ← Back to activity
+          {t("back")}
         </Link>
 
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Edit transfer</h1>
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
-        <p className="mt-2 text-zinc-600">Update the amount, source wallet, destination wallet, or occurrence date.</p>
+        <p className="mt-2 text-zinc-600">{t("description")}</p>
       </header>
 
       <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
@@ -72,10 +75,10 @@ export default async function EditTransferPage({ params }: EditTransferPageProps
 
       <section aria-labelledby="delete-transfer-heading" className="rounded-2xl border border-red-200 bg-red-50 p-6">
         <h2 className="text-lg font-semibold tracking-tight text-red-900" id="delete-transfer-heading">
-          Danger zone
+          {t("dangerTitle")}
         </h2>
 
-        <p className="mt-2 mb-5 text-sm text-red-700">Permanently remove this transfer from the workspace.</p>
+        <p className="mt-2 mb-5 text-sm text-red-700">{t("dangerDescription")}</p>
 
         <DeleteTransferForm transferId={transfer.id} workspaceId={workspaceId} />
       </section>

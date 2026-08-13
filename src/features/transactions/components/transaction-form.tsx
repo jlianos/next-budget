@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useId, useRef } from "react";
+import { useTranslations } from "next-intl";
 
 import { FormErrors } from "@/components/forms/form-errors";
 
@@ -44,6 +45,7 @@ export function TransactionForm({
   transaction,
   onCreated,
 }: TransactionFormProps) {
+  const t = useTranslations("Transactions.forms");
   const formId = useId();
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -83,7 +85,7 @@ export function TransactionForm({
     <form action={formAction} className="space-y-5" ref={formRef}>
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor={ids.amount}>
-          Amount ({currency})
+          {t("amount", { currency })}
         </label>
 
         <input
@@ -107,7 +109,7 @@ export function TransactionForm({
 
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor={ids.wallet}>
-          Wallet
+          {t("wallet")}
         </label>
 
         <select
@@ -120,7 +122,7 @@ export function TransactionForm({
           required
         >
           <option disabled value="">
-            Select a wallet
+            {t("selectWallet")}
           </option>
 
           {wallets.map((wallet) => (
@@ -135,7 +137,7 @@ export function TransactionForm({
 
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor={ids.category}>
-          Category
+          {t("category")}
         </label>
 
         <select
@@ -148,11 +150,11 @@ export function TransactionForm({
           required
         >
           <option disabled value="">
-            Select a category
+            {t("selectCategory")}
           </option>
 
           {transactionTypes.map((type) => (
-            <optgroup key={type.id} label={`${type.direction === "INCOME" ? "Income" : "Expense"} · ${type.name}`}>
+            <optgroup key={type.id} label={`${t(type.direction === "INCOME" ? "income" : "expense")} · ${type.name}`}>
               {type.transactionCategories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -167,7 +169,7 @@ export function TransactionForm({
 
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor={ids.occurredAt}>
-          Date and time
+          {t("dateTime")}
         </label>
 
         <input
@@ -187,7 +189,7 @@ export function TransactionForm({
 
       {!formAvailable && (
         <p className="text-sm text-amber-700">
-          This workspace needs at least one wallet and category before you can record a transaction.
+          {t("unavailable")}
         </p>
       )}
 
@@ -210,11 +212,11 @@ export function TransactionForm({
       >
         {pending
           ? transaction
-            ? "Updating transaction…"
-            : "Saving transaction…"
+            ? t("updating")
+            : t("saving")
           : transaction
-            ? "Update transaction"
-            : "Save transaction"}
+            ? t("update")
+            : t("save")}
       </button>
     </form>
   );

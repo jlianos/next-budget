@@ -4,6 +4,10 @@
     "english": "English",
     "greek": "Greek"
   },
+  "Metadata": {
+    "title": "NextBudget",
+    "description": "Track income, expenses, transfers, and recurring finances."
+  },
   "AppShell": {
     "applicationNavigation": "Application navigation",
     "closeNavigation": "Close navigation",
@@ -160,6 +164,478 @@
       "copyId": "Copy ID",
       "copySuccess": "Workspace ID copied to clipboard.",
       "copyFailed": "Unable to copy the workspace ID."
+    },
+    "feedback": {
+      "validation": {
+        "nameRequired": "Please enter a workspace name.",
+        "nameTooShort": "Name must contain at least 2 characters.",
+        "nameTooLong": "Name cannot exceed 60 characters.",
+        "currencyRequired": "Please select a supported currency.",
+        "idRequired": "Please enter a workspace ID.",
+        "idInvalid": "The workspace ID is invalid."
+      },
+      "createFailed": "Unable to create your workspace. Please try again.",
+      "created": "Workspace created successfully.",
+      "notFound": "No workspace was found with this ID.",
+      "joinFailed": "Unable to join this workspace. Please try again.",
+      "joined": "You joined {workspaceName}."
+    }
+  },
+  "Auth": {
+    "brand": "Next Budget",
+    "signIn": {
+      "metadataTitle": "Sign in",
+      "metadataDescription": "Sign in to your expense tracker.",
+      "title": "Welcome back",
+      "description": "Sign in to continue managing your finances."
+    },
+    "signUp": {
+      "metadataTitle": "Create account",
+      "metadataDescription": "Create your expense tracker account.",
+      "title": "Create your account",
+      "description": "Start tracking your finances or join an existing workspace."
+    },
+    "forms": {
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "signIn": "Sign in",
+      "signingIn": "Signing in…",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "createAccount": "Create account",
+      "creatingAccount": "Creating account…",
+      "hasAccount": "Already have an account?"
+    },
+    "feedback": {
+      "validation": {
+        "emailRequired": "Please enter your email.",
+        "emailInvalid": "Please enter a valid email.",
+        "emailTooLong": "Email is too long.",
+        "passwordRequired": "Please enter a password.",
+        "signInPasswordRequired": "Please enter your password.",
+        "passwordTooShort": "Password must contain at least 12 characters.",
+        "passwordTooLong": "Password is too long.",
+        "confirmPasswordRequired": "Please confirm your password.",
+        "passwordsDoNotMatch": "Passwords do not match."
+      },
+      "accountExists": "An account with this email already exists.",
+      "createAccountFailed": "Unable to create your account. Please try again.",
+      "signInFailed": "Unable to sign in. Please try again.",
+      "invalidCredentials": "Invalid email or password."
+    }
+  },
+  "Overview": {
+    "title": "Overview",
+    "description": "Review your workspace finances for a selected period.",
+    "filters": {
+      "from": "From",
+      "to": "To",
+      "apply": "Apply"
+    },
+    "summary": {
+      "label": "Financial summary",
+      "income": "Income",
+      "expenses": "Expenses",
+      "net": "Net cash flow"
+    },
+    "wallets": {
+      "title": "Wallet balances",
+      "description": "Balances include all recorded activity.",
+      "emptyTitle": "No wallets yet",
+      "emptyDescription": "Create a wallet to begin tracking balances."
+    },
+    "categories": {
+      "title": "Expenses by category",
+      "description": "Spending during the selected period.",
+      "barLabel": "{category}: {percentage} of expenses",
+      "emptyTitle": "No expenses in this period",
+      "emptyDescription": "Try selecting another date range."
+    },
+    "activity": {
+      "title": "Recent activity",
+      "description": "Latest transactions and transfers during the selected period.",
+      "transfer": "Transfer",
+      "recurring": "Recurring",
+      "emptyTitle": "No activity in this period",
+      "emptyDescription": "Try selecting another date range."
+    },
+    "upcoming": {
+      "title": "Upcoming recurring",
+      "description": "Your next scheduled income and expenses.",
+      "next": "Next:",
+      "emptyTitle": "No upcoming recurring items",
+      "emptyDescription": "Scheduled income and expenses will appear here."
+    },
+    "recurrence": {
+      "daily": "{interval, plural, =1 {Every day} other {Every # days}}",
+      "weekly": "{interval, plural, =1 {Every week} other {Every # weeks}}",
+      "monthly": "{interval, plural, =1 {Every month} other {Every # months}}",
+      "yearly": "{interval, plural, =1 {Every year} other {Every # years}}",
+      "fallback": "{interval, plural, =1 {Every period} other {Every # periods}}"
+    },
+    "loading": "Loading your financial overview."
+  },
+  "Activity": {
+    "title": "Activity",
+    "description": "Record and review income, expenses, and transfers.",
+    "filters": {
+      "from": "From",
+      "to": "To",
+      "kind": "Kind",
+      "allActivity": "All activity",
+      "income": "Income",
+      "expenses": "Expenses",
+      "transfers": "Transfers",
+      "wallet": "Wallet",
+      "allWallets": "All wallets",
+      "type": "Type",
+      "allTypes": "All types",
+      "expense": "Expense",
+      "category": "Category",
+      "allCategories": "All categories",
+      "createdBy": "Created by",
+      "allMembers": "All members",
+      "apply": "Apply"
+    },
+    "record": {
+      "title": "Record activity",
+      "description": "Add income, an expense, or move money between wallets.",
+      "transactionTitle": "Income or expense",
+      "transactionDescription": "The category determines the transaction direction.",
+      "transferTitle": "Transfer",
+      "transferDescription": "Move money between two workspace wallets."
+    },
+    "readOnly": {
+      "title": "Read-only workspace",
+      "description": "Your viewer role does not allow recording financial activity."
+    },
+    "history": {
+      "title": "Activity history",
+      "count": "{count, plural, =0 {Showing no items in this period.} =1 {Showing the newest item in this period.} other {Showing the newest # items in this period.}}",
+      "transfer": "Transfer",
+      "recurring": "Recurring",
+      "edit": "Edit",
+      "editTransaction": "Edit {category} transaction",
+      "editTransfer": "Edit transfer from {fromWallet} to {toWallet}",
+      "emptyTitle": "No activity in this period",
+      "emptyDescription": "Record a transaction or select another date range."
+    },
+    "loading": "Loading workspace activity."
+  },
+  "Transactions": {
+    "forms": {
+      "amount": "Amount ({currency})",
+      "wallet": "Wallet",
+      "selectWallet": "Select a wallet",
+      "category": "Category",
+      "selectCategory": "Select a category",
+      "income": "Income",
+      "expense": "Expense",
+      "dateTime": "Date and time",
+      "unavailable": "This workspace needs at least one wallet and category before you can record a transaction.",
+      "updating": "Updating transaction…",
+      "saving": "Saving transaction…",
+      "update": "Update transaction",
+      "save": "Save transaction"
+    },
+    "quickAdd": {
+      "open": "Add transaction",
+      "title": "Add transaction",
+      "description": "Quickly record income or an expense.",
+      "close": "Close add transaction dialog"
+    },
+    "edit": {
+      "back": "← Back to activity",
+      "title": "Edit transaction",
+      "description": "Update the amount, wallet, category, or occurrence date.",
+      "recurringNotice": "This is a generated recurring transaction. Editing it changes only this occurrence, not its recurring schedule.",
+      "dangerTitle": "Danger zone",
+      "dangerDescription": "Permanently remove this transaction from the workspace."
+    },
+    "delete": {
+      "button": "Delete transaction",
+      "title": "Permanently delete this transaction?",
+      "description": "This cannot be undone and will affect the workspace totals.",
+      "recurringNotice": "The recurring schedule will remain active and may generate this occurrence again in the future.",
+      "deleting": "Deleting transaction…",
+      "confirm": "Delete permanently",
+      "cancel": "Cancel"
+    },
+    "feedback": {
+      "validation": {
+        "selectOption": "Please select an option.",
+        "invalidOption": "The selected option is invalid.",
+        "amountRequired": "Please enter an amount.",
+        "amountInvalid": "Please enter a valid amount.",
+        "amountPrecision": "Use no more than 12 whole digits and 2 decimal places.",
+        "amountPositive": "Amount must be greater than zero.",
+        "dateRequired": "Please select a date and time.",
+        "dateInvalid": "Please select a valid date and time."
+      },
+      "noAccess": "You do not have access to this workspace.",
+      "cannotCreate": "Your workspace role cannot create transactions.",
+      "cannotEdit": "Your workspace role cannot edit transactions.",
+      "cannotDelete": "Your workspace role cannot delete transactions.",
+      "walletUnavailable": "The selected wallet is unavailable.",
+      "categoryUnavailable": "The selected category is unavailable.",
+      "transactionInvalid": "The transaction is invalid.",
+      "transactionUnavailable": "This transaction is unavailable.",
+      "saveFailed": "Unable to save this transaction. Please try again.",
+      "updateFailed": "Unable to update this transaction. Please try again.",
+      "deleteFailed": "Unable to delete this transaction. Please try again.",
+      "incomeRecorded": "Income recorded successfully.",
+      "expenseRecorded": "Expense recorded successfully."
+    }
+  },
+  "Transfers": {
+    "forms": {
+      "amount": "Amount ({currency})",
+      "fromWallet": "From wallet",
+      "selectSource": "Select the source wallet",
+      "toWallet": "To wallet",
+      "selectDestination": "Select the destination wallet",
+      "dateTime": "Date and time",
+      "unavailable": "This workspace needs at least two wallets before you can record a transfer.",
+      "updating": "Updating transfer…",
+      "saving": "Saving transfer…",
+      "update": "Update transfer",
+      "save": "Save transfer"
+    },
+    "edit": {
+      "back": "← Back to activity",
+      "title": "Edit transfer",
+      "description": "Update the amount, source wallet, destination wallet, or occurrence date.",
+      "dangerTitle": "Danger zone",
+      "dangerDescription": "Permanently remove this transfer from the workspace."
+    },
+    "delete": {
+      "button": "Delete transfer",
+      "title": "Permanently delete this transfer?",
+      "description": "This cannot be undone and will change both wallet balances.",
+      "deleting": "Deleting transfer…",
+      "confirm": "Delete permanently",
+      "cancel": "Cancel"
+    },
+    "feedback": {
+      "validation": {
+        "selectOption": "Please select an option.",
+        "invalidOption": "The selected option is invalid.",
+        "amountRequired": "Please enter an amount.",
+        "amountInvalid": "Please enter a valid amount.",
+        "amountPrecision": "Use no more than 12 whole digits and 2 decimal places.",
+        "amountPositive": "Amount must be greater than zero.",
+        "dateRequired": "Please select a date and time.",
+        "dateInvalid": "Please select a valid date and time.",
+        "differentWallets": "Choose two different wallets."
+      },
+      "noAccess": "You do not have access to this workspace.",
+      "cannotCreate": "Your workspace role cannot create transfers.",
+      "cannotEdit": "Your workspace role cannot edit transfers.",
+      "cannotDelete": "Your workspace role cannot delete transfers.",
+      "sourceUnavailable": "The source wallet is unavailable.",
+      "destinationUnavailable": "The destination wallet is unavailable.",
+      "transferInvalid": "The transfer is invalid.",
+      "transferUnavailable": "This transfer is unavailable.",
+      "saveFailed": "Unable to save this transfer. Please try again.",
+      "updateFailed": "Unable to update this transfer. Please try again.",
+      "deleteFailed": "Unable to delete this transfer. Please try again.",
+      "recorded": "Transfer recorded successfully."
+    }
+  },
+  "Reports": {
+    "title": "Reports",
+    "description": "Review income, expenses, and net cash flow over time.",
+    "filters": {
+      "from": "From",
+      "to": "To",
+      "apply": "Apply"
+    },
+    "summary": {
+      "label": "Selected period summary",
+      "income": "Income",
+      "expenses": "Expenses",
+      "net": "Net cash flow"
+    },
+    "cashFlow": {
+      "title": "Cash flow over time",
+      "dailyDescription": "Daily totals for the selected period.",
+      "monthlyDescription": "Monthly totals for the selected period.",
+      "emptyTitle": "No financial activity in this period",
+      "emptyDescription": "Select another date range or record income and expenses."
+    },
+    "wallets": {
+      "title": "Wallet movement",
+      "description": "Selected-period changes including income, expenses, and transfers. These are period movements, not all-time balances.",
+      "netChange": "Net change",
+      "transfersIn": "Transfers in",
+      "transfersOut": "Transfers out",
+      "emptyTitle": "No wallets in this workspace",
+      "emptyDescription": "Create a wallet before recording financial activity."
+    },
+    "breakdowns": {
+      "label": "Expense breakdowns",
+      "byTypeTitle": "Expenses by type",
+      "byTypeDescription": "The largest expense groups in the selected period.",
+      "byCategoryTitle": "Expenses by category",
+      "byCategoryDescription": "The ten largest expense categories in the selected period.",
+      "empty": "No expenses in this period."
+    },
+    "charts": {
+      "income": "Income",
+      "expenses": "Expenses",
+      "net": "Net"
+    }
+  },
+  "Recurring": {
+    "title": "Recurring",
+    "description": "Manage automatically generated income and expenses.",
+    "readOnly": {
+      "title": "Read-only workspace",
+      "description": "Your viewer role does not allow recurring schedule changes."
+    },
+    "create": {
+      "title": "Create recurring schedule",
+      "description": "Schedule income or expenses to be generated automatically."
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "stopping": "Stopping…",
+      "starting": "Starting…",
+      "stop": "Stop schedule",
+      "start": "Start schedule"
+    },
+    "details": {
+      "schedule": "Schedule",
+      "nextPending": "Next pending",
+      "starts": "Starts",
+      "ends": "Ends",
+      "noEndDate": "No end date",
+      "generated": "{count, plural, =0 {No generated transactions} =1 {# generated transaction} other {# generated transactions}} · Created by {email}"
+    },
+    "recurrence": {
+      "daily": "{interval, plural, =1 {Every day} other {Every # days}}",
+      "weekly": "{interval, plural, =1 {Every week} other {Every # weeks}}",
+      "monthly": "{interval, plural, =1 {Every month} other {Every # months}}",
+      "yearly": "{interval, plural, =1 {Every year} other {Every # years}}",
+      "fallback": "{interval, plural, =1 {Every period} other {Every # periods}}"
+    },
+    "empty": {
+      "title": "No recurring schedules",
+      "description": "Recurring income and expenses will appear here after they are created."
+    },
+    "form": {
+      "amount": "Amount ({currency})",
+      "wallet": "Wallet",
+      "selectWallet": "Select a wallet",
+      "category": "Category",
+      "selectCategory": "Select a category",
+      "income": "Income",
+      "expense": "Expense",
+      "frequency": "Frequency",
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "repeatEvery": "Repeat every",
+      "starts": "Starts",
+      "ends": "Ends",
+      "optional": "optional",
+      "unavailable": "This workspace needs at least one wallet and category before you can create a recurring schedule.",
+      "creating": "Creating schedule…",
+      "create": "Create schedule"
+    },
+    "feedback": {
+      "validation": {
+        "selectOption": "Please select an option.",
+        "invalidOption": "The selected option is invalid.",
+        "amountRequired": "Please enter an amount.",
+        "amountInvalid": "Please enter a valid amount.",
+        "amountPrecision": "Use no more than 12 whole digits and 2 decimal places.",
+        "amountPositive": "Amount must be greater than zero.",
+        "frequencyRequired": "Please select a recurrence frequency.",
+        "intervalRequired": "Please enter an interval.",
+        "intervalWhole": "Interval must be a whole number.",
+        "intervalMinimum": "Interval must be at least 1.",
+        "dateRequired": "Please select a date and time.",
+        "dateInvalid": "Please select a valid date and time.",
+        "endBeforeStart": "The end date cannot be earlier than the start date."
+      },
+      "noAccess": "You do not have access to this workspace.",
+      "cannotCreate": "Your workspace role cannot create recurring schedules.",
+      "cannotChange": "Your workspace role cannot change recurring schedules.",
+      "walletUnavailable": "The selected wallet is unavailable.",
+      "categoryUnavailable": "The selected category is unavailable.",
+      "invalidSchedule": "The recurring schedule is invalid.",
+      "scheduleUnavailable": "This recurring schedule is unavailable.",
+      "saveFailed": "Unable to save this recurring schedule. Please try again.",
+      "changeFailed": "Unable to change this recurring schedule. Please try again.",
+      "incomeCreated": "Income schedule created successfully.",
+      "expenseCreated": "Expense schedule created successfully.",
+      "started": "Recurring schedule started.",
+      "stopped": "Recurring schedule stopped."
+    }
+  },
+  "Wallets": {
+    "title": "Wallets",
+    "description": "Review balances and manage the wallets in this workspace.",
+    "readOnly": {
+      "title": "Read-only workspace",
+      "description": "Your viewer role does not allow wallet changes."
+    },
+    "create": {
+      "title": "Create wallet",
+      "description": "Add another place for tracking money in this workspace."
+    },
+    "badges": {
+      "canDelete": "Can delete",
+      "inUse": "In use"
+    },
+    "counts": {
+      "transactions": "{count, plural, =0 {0 transactions} =1 {# transaction} other {# transactions}}",
+      "transfers": "{count, plural, =0 {0 transfers} =1 {# transfer} other {# transfers}}",
+      "recurring": "{count, plural, =0 {0 recurring items} =1 {# recurring item} other {# recurring items}}"
+    },
+    "inUseHint": "This wallet cannot be deleted while financial activity references it.",
+    "deleteHint": "This wallet has no financial activity and can be permanently deleted.",
+    "empty": {
+      "title": "No wallets yet",
+      "description": "Create your first wallet to begin recording financial activity."
+    },
+    "forms": {
+      "name": "Wallet name",
+      "namePlaceholder": "Main account",
+      "creating": "Creating wallet…",
+      "create": "Create wallet",
+      "saving": "Saving…",
+      "rename": "Rename wallet",
+      "delete": "Delete wallet",
+      "deleteTitle": "Delete wallet?",
+      "deleteDescription": "<strong>{walletName}</strong> will be permanently deleted. This action cannot be undone.",
+      "cancel": "Cancel",
+      "deleting": "Deleting…",
+      "deletePermanently": "Delete permanently"
+    },
+    "feedback": {
+      "validation": {
+        "nameRequired": "Please enter a wallet name.",
+        "nameTooShort": "Wallet name must contain at least 2 characters.",
+        "nameTooLong": "Wallet name cannot exceed 60 characters."
+      },
+      "noAccess": "You do not have access to this workspace.",
+      "cannotCreate": "Your workspace role cannot create wallets.",
+      "cannotRename": "Your workspace role cannot rename wallets.",
+      "cannotDelete": "Your workspace role cannot delete wallets.",
+      "duplicate": "A wallet with this name already exists.",
+      "invalidWallet": "This wallet is invalid.",
+      "unavailable": "This wallet is no longer available.",
+      "inUse": "This wallet cannot be deleted while financial activity references it.",
+      "createFailed": "Unable to create this wallet. Please try again.",
+      "renameFailed": "Unable to rename this wallet. Please try again.",
+      "deleteFailed": "Unable to delete this wallet. Please try again.",
+      "created": "Wallet created successfully.",
+      "renamed": "Wallet renamed successfully."
     }
   },
   "WorkspaceSettings": {

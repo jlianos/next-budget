@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import * as v from "valibot";
 import prisma from "@/db/prisma";
 import { requireUser } from "@/features/auth/dal";
@@ -9,14 +10,26 @@ import { Prisma, WorkspaceRole } from "@/generated/prisma/client";
 import { parseDateTime } from "@/lib/dates";
 import { DatabaseIdSchema } from "@/lib/validation";
 
-import { CreateTransferSchema, type DeleteTransferState, type TransferFormState } from "./validation";
+import { createTransferSchema, type DeleteTransferState, type TransferFormState } from "./validation";
+
+async function getTransferActionContext() {
+  const t = await getTranslations("Transfers.feedback");
+  const schema = createTransferSchema({
+    selectOption: t("validation.selectOption"), invalidOption: t("validation.invalidOption"),
+    amountRequired: t("validation.amountRequired"), amountInvalid: t("validation.amountInvalid"),
+    amountPrecision: t("validation.amountPrecision"), amountPositive: t("validation.amountPositive"),
+    dateRequired: t("validation.dateRequired"), dateInvalid: t("validation.dateInvalid"),
+    differentWallets: t("validation.differentWallets"),
+  });
+  return { schema, t };
+}
 
 export async function createTransfer(
   workspaceId: string,
   _previousState: TransferFormState,
   formData: FormData,
 ): Promise<TransferFormState> {
-  const user = await requireUser();
+  const [user, { schema: CreateTransferSchema, t }] = await Promise.all([requireUser(), getTransferActionContext()]);
 
   const result = v.safeParse(CreateTransferSchema, {
     amount: formData.get("amount"),
@@ -61,13 +74,13 @@ export async function createTransfer(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot create transfers.",
+      formError: t("cannotCreate"),
     };
   }
 
@@ -76,7 +89,7 @@ export async function createTransfer(
   if (!availableWalletIds.has(fromWalletId)) {
     return {
       fieldErrors: {
-        fromWalletId: ["The source wallet is unavailable."],
+        fromWalletId: [t("sourceUnavailable")],
       },
     };
   }
@@ -84,7 +97,7 @@ export async function createTransfer(
   if (!availableWalletIds.has(toWalletId)) {
     return {
       fieldErrors: {
-        toWalletId: ["The destination wallet is unavailable."],
+        toWalletId: [t("destinationUnavailable")],
       },
     };
   }
@@ -103,7 +116,7 @@ export async function createTransfer(
     console.error("Unable to create transfer:", error);
 
     return {
-      formError: "Unable to save this transfer. Please try again.",
+      formError: t("saveFailed"),
     };
   }
 
@@ -111,7 +124,7 @@ export async function createTransfer(
   revalidatePath(`/w/${workspaceId}/activity`);
 
   return {
-    successMessage: "Transfer recorded successfully.",
+    successMessage: t("recorded"),
   };
 }
 
@@ -121,13 +134,13 @@ export async function updateTransfer(
   _previousState: TransferFormState,
   formData: FormData,
 ): Promise<TransferFormState> {
-  const user = await requireUser();
+  const [user, { schema: CreateTransferSchema, t }] = await Promise.all([requireUser(), getTransferActionContext()]);
 
   const transferIdResult = v.safeParse(DatabaseIdSchema, transferId);
 
   if (!transferIdResult.success) {
     return {
-      formError: "The transfer is invalid.",
+      formError: t("transferInvalid"),
     };
   }
 
@@ -190,19 +203,19 @@ export async function updateTransfer(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot edit transfers.",
+      formError: t("cannotEdit"),
     };
   }
 
   if (!transfer) {
     return {
-      formError: "This transfer is unavailable.",
+      formError: t("transferUnavailable"),
     };
   }
 
@@ -211,7 +224,7 @@ export async function updateTransfer(
   if (!availableWalletIds.has(fromWalletId)) {
     return {
       fieldErrors: {
-        fromWalletId: ["The source wallet is unavailable."],
+        fromWalletId: [t("sourceUnavailable")],
       },
     };
   }
@@ -219,7 +232,7 @@ export async function updateTransfer(
   if (!availableWalletIds.has(toWalletId)) {
     return {
       fieldErrors: {
-        toWalletId: ["The destination wallet is unavailable."],
+        toWalletId: [t("destinationUnavailable")],
       },
     };
   }
@@ -240,7 +253,7 @@ export async function updateTransfer(
     console.error("Unable to update transfer:", error);
 
     return {
-      formError: "Unable to update this transfer. Please try again.",
+      formError: t("updateFailed"),
     };
   }
 
@@ -255,13 +268,13 @@ export async function deleteTransfer(
   _previousState: DeleteTransferState,
   _formData: FormData,
 ): Promise<DeleteTransferState> {
-  const user = await requireUser();
+  const [user, t] = await Promise.all([requireUser(), getTranslations("Transfers.feedback")]);
 
   const transferIdResult = v.safeParse(DatabaseIdSchema, transferId);
 
   if (!transferIdResult.success) {
     return {
-      formError: "The transfer is invalid.",
+      formError: t("transferInvalid"),
     };
   }
 
@@ -279,13 +292,13 @@ export async function deleteTransfer(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot delete transfers.",
+      formError: t("cannotDelete"),
     };
   }
 
@@ -304,14 +317,14 @@ export async function deleteTransfer(
 
     if (result.count !== 1) {
       return {
-        formError: "This transfer is unavailable.",
+        formError: t("transferUnavailable"),
       };
     }
   } catch (error) {
     console.error("Unable to delete transfer:", error);
 
     return {
-      formError: "Unable to delete this transfer. Please try again.",
+      formError: t("deleteFailed"),
     };
   }
 

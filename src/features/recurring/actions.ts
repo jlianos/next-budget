@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import * as v from "valibot";
 
 import prisma from "@/db/prisma";
@@ -9,17 +10,41 @@ import { Prisma, WorkspaceRole } from "@/generated/prisma/client";
 import { parseDateTime } from "@/lib/dates";
 import { DatabaseIdSchema } from "@/lib/validation";
 import {
-  CreateRecurringTransactionSchema,
+  createRecurringTransactionSchema,
   type RecurringStatusState,
   type RecurringTransactionFormState,
 } from "./validation";
+
+async function getRecurringActionContext() {
+  const t = await getTranslations("Recurring.feedback");
+  const schema = createRecurringTransactionSchema({
+    selectOption: t("validation.selectOption"),
+    invalidOption: t("validation.invalidOption"),
+    amountRequired: t("validation.amountRequired"),
+    amountInvalid: t("validation.amountInvalid"),
+    amountPrecision: t("validation.amountPrecision"),
+    amountPositive: t("validation.amountPositive"),
+    frequencyRequired: t("validation.frequencyRequired"),
+    intervalRequired: t("validation.intervalRequired"),
+    intervalWhole: t("validation.intervalWhole"),
+    intervalMinimum: t("validation.intervalMinimum"),
+    dateRequired: t("validation.dateRequired"),
+    dateInvalid: t("validation.dateInvalid"),
+    endBeforeStart: t("validation.endBeforeStart"),
+  });
+
+  return { schema, t };
+}
 
 export async function createRecurringTransaction(
   workspaceId: string,
   _previousState: RecurringTransactionFormState,
   formData: FormData,
 ): Promise<RecurringTransactionFormState> {
-  const user = await requireUser();
+  const [user, { schema: CreateRecurringTransactionSchema, t }] = await Promise.all([
+    requireUser(),
+    getRecurringActionContext(),
+  ]);
 
   const result = v.safeParse(CreateRecurringTransactionSchema, {
     amount: formData.get("amount"),
@@ -82,20 +107,20 @@ export async function createRecurringTransaction(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot create recurring schedules.",
+      formError: t("cannotCreate"),
     };
   }
 
   if (!wallet) {
     return {
       fieldErrors: {
-        walletId: ["The selected wallet is unavailable."],
+        walletId: [t("walletUnavailable")],
       },
     };
   }
@@ -103,7 +128,7 @@ export async function createRecurringTransaction(
   if (!category) {
     return {
       fieldErrors: {
-        categoryId: ["The selected category is unavailable."],
+        categoryId: [t("categoryUnavailable")],
       },
     };
   }
@@ -114,7 +139,7 @@ export async function createRecurringTransaction(
   if (parsedEndsAt && parsedEndsAt.getTime() < parsedStartsAt.getTime()) {
     return {
       fieldErrors: {
-        endsAt: ["The end date cannot be earlier than the start date."],
+        endsAt: [t("validation.endBeforeStart")],
       },
     };
   }
@@ -137,17 +162,15 @@ export async function createRecurringTransaction(
     console.error("Unable to create recurring schedule:", error);
 
     return {
-      formError: "Unable to save this recurring schedule. Please try again.",
+      formError: t("saveFailed"),
     };
   }
 
   revalidatePath(`/w/${workspaceId}/recurring`);
   revalidatePath(`/w/${workspaceId}/overview`);
 
-  const transactionLabel = category.transactionType.direction === "INCOME" ? "Income" : "Expense";
-
   return {
-    successMessage: `${transactionLabel} schedule created successfully.`,
+    successMessage: category.transactionType.direction === "INCOME" ? t("incomeCreated") : t("expenseCreated"),
   };
 }
 
@@ -156,13 +179,13 @@ async function setRecurringTransactionActive(
   recurringTransactionId: string,
   isActive: boolean,
 ): Promise<RecurringStatusState> {
-  const user = await requireUser();
+  const [user, t] = await Promise.all([requireUser(), getTranslations("Recurring.feedback")]);
 
   const idResult = v.safeParse(DatabaseIdSchema, recurringTransactionId);
 
   if (!idResult.success) {
     return {
-      formError: "The recurring schedule is invalid.",
+      formError: t("invalidSchedule"),
     };
   }
 
@@ -180,13 +203,13 @@ async function setRecurringTransactionActive(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot change recurring schedules.",
+      formError: t("cannotChange"),
     };
   }
 
@@ -210,14 +233,14 @@ async function setRecurringTransactionActive(
 
     if (result.count !== 1) {
       return {
-        formError: "This recurring schedule is unavailable.",
+        formError: t("scheduleUnavailable"),
       };
     }
   } catch (error) {
     console.error("Unable to change recurring schedule:", error);
 
     return {
-      formError: "Unable to change this recurring schedule. Please try again.",
+      formError: t("changeFailed"),
     };
   }
 
@@ -225,7 +248,7 @@ async function setRecurringTransactionActive(
   revalidatePath(`/w/${workspaceId}/overview`);
 
   return {
-    successMessage: isActive ? "Recurring schedule started." : "Recurring schedule stopped.",
+    successMessage: isActive ? t("started") : t("stopped"),
   };
 }
 

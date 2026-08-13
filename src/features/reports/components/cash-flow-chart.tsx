@@ -1,8 +1,7 @@
 "use client";
 
+import { useFormatter, useTranslations } from "next-intl";
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-
-import { formatMoney } from "@/lib/money";
 
 type CashFlowChartProps = {
   currency: string;
@@ -16,6 +15,8 @@ type CashFlowChartProps = {
 };
 
 export function CashFlowChart({ currency, data }: CashFlowChartProps) {
+  const format = useFormatter();
+  const t = useTranslations("Reports.charts");
   const chartData = data.map((item) => ({
     ...item,
     income: Number(item.income),
@@ -56,10 +57,10 @@ export function CashFlowChart({ currency, data }: CashFlowChartProps) {
               fontSize: 12,
             }}
             tickFormatter={(value: number) =>
-              new Intl.NumberFormat("en", {
+              format.number(value, {
                 notation: "compact",
                 maximumFractionDigits: 1,
-              }).format(value)
+              })
             }
             tickLine={false}
             width={48}
@@ -74,21 +75,21 @@ export function CashFlowChart({ currency, data }: CashFlowChartProps) {
             formatter={(value, name) => {
               const amount = Array.isArray(value) ? (value[0] ?? 0) : value;
 
-              return [formatMoney(amount, currency), name ?? ""];
+              return [format.number(Number(amount), { style: "currency", currency }), name ?? ""];
             }}
           />
 
           <Legend />
 
-          <Bar dataKey="income" fill="#059669" isAnimationActive={false} name="Income" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="income" fill="#059669" isAnimationActive={false} name={t("income")} radius={[4, 4, 0, 0]} />
 
-          <Bar dataKey="expenses" fill="#dc2626" isAnimationActive={false} name="Expenses" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="expenses" fill="#dc2626" isAnimationActive={false} name={t("expenses")} radius={[4, 4, 0, 0]} />
 
           <Line
             dataKey="net"
             dot={false}
             isAnimationActive={false}
-            name="Net"
+            name={t("net")}
             stroke="#18181b"
             strokeWidth={2}
             type="monotone"

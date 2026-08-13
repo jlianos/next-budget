@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getFormatter, getTranslations } from "next-intl/server";
+
 import { type ActivityKind, getActivityCreators, getWorkspaceActivity } from "@/features/activity/queries";
 import { requireUser } from "@/features/auth/dal";
 import { TransactionForm } from "@/features/transactions/components/transaction-form";
 import { getTransactionFormOptions } from "@/features/transactions/queries";
 import { TransferForm } from "@/features/transfers/components/transfer-form";
 import { WorkspaceRole } from "@/generated/prisma/client";
-import { formatDateTime, formatDateTimeInput, getDateRange } from "@/lib/dates";
-import { formatMoney } from "@/lib/money";
+import { formatDateTimeInput, getDateRange } from "@/lib/dates";
 
 type ActivityPageProps = {
   params: Promise<{
@@ -58,7 +59,13 @@ function getActivityOptionId(value: string | string[] | undefined, options: read
 }
 
 export default async function ActivityPage({ params, searchParams }: ActivityPageProps) {
-  const [user, { workspaceId }, query] = await Promise.all([requireUser(), params, searchParams]);
+  const [user, { workspaceId }, query, t, format] = await Promise.all([
+    requireUser(),
+    params,
+    searchParams,
+    getTranslations("Activity"),
+    getFormatter(),
+  ]);
 
   const dateRange = getDateRange(getFirstValue(query.from), getFirstValue(query.to));
 
@@ -101,13 +108,30 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
 
   const canCreate = options.role !== WorkspaceRole.VIEWER;
   const defaultOccurredAt = formatDateTimeInput();
+  const directionLabels = {
+    INCOME: t("filters.income"),
+    EXPENSE: t("filters.expense"),
+  };
+  const formatActivityMoney = (amount: string) =>
+    format.number(Number(amount), {
+      style: "currency",
+      currency: activity.currency,
+    });
+  const formatActivityDateTime = (value: string) =>
+    format.dateTime(new Date(value), {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Activity</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
-        <p className="mt-2 text-zinc-600">Record and review income, expenses, and transfers.</p>
+        <p className="mt-2 text-zinc-600">{t("description")}</p>
       </header>
 
       <form
@@ -115,7 +139,7 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
         method="get"
       >
         <label className="flex flex-1 flex-col gap-1.5 text-sm font-medium text-zinc-700">
-          From
+          {t("filters.from")}
           <input
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2"
             defaultValue={dateRange.from}
@@ -125,7 +149,7 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
         </label>
 
         <label className="flex flex-1 flex-col gap-1.5 text-sm font-medium text-zinc-700">
-          To
+          {t("filters.to")}
           <input
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2"
             defaultValue={dateRange.to}
@@ -135,27 +159,27 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
         </label>
 
         <label className="flex flex-1 flex-col gap-1.5 text-sm font-medium text-zinc-700">
-          Kind
+          {t("filters.kind")}
           <select
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2"
             defaultValue={activityKind}
             name="kind"
           >
-            <option value="all">All activity</option>
-            <option value="income">Income</option>
-            <option value="expense">Expenses</option>
-            <option value="transfer">Transfers</option>
+            <option value="all">{t("filters.allActivity")}</option>
+            <option value="income">{t("filters.income")}</option>
+            <option value="expense">{t("filters.expenses")}</option>
+            <option value="transfer">{t("filters.transfers")}</option>
           </select>
         </label>
 
         <label className="flex flex-1 flex-col gap-1.5 text-sm font-medium text-zinc-700">
-          Wallet
+          {t("filters.wallet")}
           <select
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2"
             defaultValue={walletId?.toString() ?? "all"}
             name="wallet"
           >
-            <option value="all">All wallets</option>
+            <option value="all">{t("filters.allWallets")}</option>
 
             {options.wallets.map((wallet) => (
               <option key={wallet.id} value={wallet.id}>
@@ -166,17 +190,17 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
         </label>
 
         <label className="flex flex-1 flex-col gap-1.5 text-sm font-medium text-zinc-700">
-          Type
+          {t("filters.type")}
           <select
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2"
             defaultValue={transactionTypeId?.toString() ?? "all"}
             name="type"
           >
-            <option value="all">All types</option>
+            <option value="all">{t("filters.allTypes")}</option>
 
             {options.transactionTypes.map((type) => (
               <option key={type.id} value={type.id}>
-                {type.direction === "INCOME" ? "Income" : "Expense"}
+                {directionLabels[type.direction]}
                 {" · "}
                 {type.name}
               </option>
@@ -185,16 +209,16 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
         </label>
 
         <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700">
-          Category
+          {t("filters.category")}
           <select
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2"
             defaultValue={categoryId?.toString() ?? "all"}
             name="category"
           >
-            <option value="all">All categories</option>
+            <option value="all">{t("filters.allCategories")}</option>
 
             {options.transactionTypes.map((type) => (
-              <optgroup key={type.id} label={`${type.direction === "INCOME" ? "Income" : "Expense"} · ${type.name}`}>
+              <optgroup key={type.id} label={`${directionLabels[type.direction]} · ${type.name}`}>
                 {type.transactionCategories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -206,13 +230,13 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
         </label>
 
         <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700">
-          Created by
+          {t("filters.createdBy")}
           <select
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2"
             defaultValue={createdById?.toString() ?? "all"}
             name="creator"
           >
-            <option value="all">All members</option>
+            <option value="all">{t("filters.allMembers")}</option>
 
             {creators.map((creator) => (
               <option key={creator.id} value={creator.id}>
@@ -226,7 +250,7 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
           className="self-end rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white hover:bg-zinc-700"
           type="submit"
         >
-          Apply
+          {t("filters.apply")}
         </button>
       </form>
 
@@ -234,10 +258,10 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
         <section aria-labelledby="record-activity-heading" className="space-y-3">
           <div>
             <h2 className="text-lg font-semibold tracking-tight" id="record-activity-heading">
-              Record activity
+              {t("record.title")}
             </h2>
 
-            <p className="mt-1 text-sm text-zinc-600">Add income, an expense, or move money between wallets.</p>
+            <p className="mt-1 text-sm text-zinc-600">{t("record.description")}</p>
           </div>
 
           <div className="grid items-start gap-6 lg:grid-cols-2">
@@ -247,10 +271,10 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
             >
               <div className="mb-6">
                 <h3 className="text-lg font-semibold tracking-tight" id="create-transaction-heading">
-                  Income or expense
+                  {t("record.transactionTitle")}
                 </h3>
 
-                <p className="mt-1 text-sm text-zinc-600">The category determines the transaction direction.</p>
+                <p className="mt-1 text-sm text-zinc-600">{t("record.transactionDescription")}</p>
               </div>
 
               <TransactionForm
@@ -268,10 +292,10 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
             >
               <div className="mb-6">
                 <h3 className="text-lg font-semibold tracking-tight" id="create-transfer-heading">
-                  Transfer
+                  {t("record.transferTitle")}
                 </h3>
 
-                <p className="mt-1 text-sm text-zinc-600">Move money between two workspace wallets.</p>
+                <p className="mt-1 text-sm text-zinc-600">{t("record.transferDescription")}</p>
               </div>
 
               <TransferForm
@@ -285,19 +309,19 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
         </section>
       ) : (
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <p className="font-medium text-zinc-950">Read-only workspace</p>
+          <p className="font-medium text-zinc-950">{t("readOnly.title")}</p>
 
-          <p className="mt-1 text-sm text-zinc-600">Your viewer role does not allow recording financial activity.</p>
+          <p className="mt-1 text-sm text-zinc-600">{t("readOnly.description")}</p>
         </div>
       )}
 
       <section aria-labelledby="activity-history-heading" className="space-y-3">
         <div>
           <h2 className="text-lg font-semibold tracking-tight" id="activity-history-heading">
-            Activity history
+            {t("history.title")}
           </h2>
 
-          <p className="mt-1 text-sm text-zinc-600">Showing the newest {activity.items.length} items in this period.</p>
+          <p className="mt-1 text-sm text-zinc-600">{t("history.count", { count: activity.items.length })}</p>
         </div>
 
         {activity.items.length > 0 ? (
@@ -315,7 +339,7 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
                 <li className="flex items-start justify-between gap-4 p-4" key={`${item.kind}-${item.id}`}>
                   <div className="min-w-0">
                     <p className="font-medium text-zinc-950">
-                      {item.kind === "transaction" ? item.categoryName : "Transfer"}
+                      {item.kind === "transaction" ? item.categoryName : t("history.transfer")}
                     </p>
 
                     <p className="mt-1 truncate text-sm text-zinc-500">
@@ -325,27 +349,30 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
                     </p>
 
                     <p className="mt-1 text-xs text-zinc-500">
-                      <time dateTime={item.occurredAt}>{formatDateTime(item.occurredAt)}</time>
+                      <time dateTime={item.occurredAt}>{formatActivityDateTime(item.occurredAt)}</time>
 
                       {" · "}
                       {item.createdByEmail}
 
-                      {item.kind === "transaction" && item.recurring && " · Recurring"}
+                      {item.kind === "transaction" && item.recurring && ` · ${t("history.recurring")}`}
                     </p>
                   </div>
 
                   <div className="flex shrink-0 flex-col items-end gap-2">
                     <p className={`font-semibold ${amountClassName}`}>
                       {amountPrefix}
-                      {formatMoney(item.amount, activity.currency)}
+                      {formatActivityMoney(item.amount)}
                     </p>
 
                     {canCreate && (
                       <Link
                         aria-label={
                           item.kind === "transaction"
-                            ? `Edit ${item.categoryName} transaction`
-                            : `Edit transfer from ${item.fromWalletName} to ${item.toWalletName}`
+                            ? t("history.editTransaction", { category: item.categoryName })
+                            : t("history.editTransfer", {
+                                fromWallet: item.fromWalletName,
+                                toWallet: item.toWalletName,
+                              })
                         }
                         className="text-sm font-medium text-zinc-600 hover:text-zinc-950"
                         href={
@@ -354,7 +381,7 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
                             : `/w/${workspaceId}/activity/transfers/${item.id}/edit`
                         }
                       >
-                        Edit
+                        {t("history.edit")}
                       </Link>
                     )}
                   </div>
@@ -364,9 +391,9 @@ export default async function ActivityPage({ params, searchParams }: ActivityPag
           </ul>
         ) : (
           <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-6 text-center">
-            <p className="font-medium text-zinc-950">No activity in this period</p>
+            <p className="font-medium text-zinc-950">{t("history.emptyTitle")}</p>
 
-            <p className="mt-1 text-sm text-zinc-600">Record a transaction or select another date range.</p>
+            <p className="mt-1 text-sm text-zinc-600">{t("history.emptyDescription")}</p>
           </div>
         )}
       </section>

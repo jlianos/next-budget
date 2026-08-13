@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import * as v from "valibot";
 
 import prisma from "@/db/prisma";
@@ -10,14 +11,33 @@ import { Prisma, WorkspaceRole } from "@/generated/prisma/client";
 import { parseDateTime } from "@/lib/dates";
 import { DatabaseIdSchema } from "@/lib/validation";
 
-import { CreateTransactionSchema, type DeleteTransactionState, type TransactionFormState } from "./validation";
+import { createTransactionSchema, type DeleteTransactionState, type TransactionFormState } from "./validation";
+
+async function getTransactionActionContext() {
+  const t = await getTranslations("Transactions.feedback");
+  const schema = createTransactionSchema({
+    selectOption: t("validation.selectOption"),
+    invalidOption: t("validation.invalidOption"),
+    amountRequired: t("validation.amountRequired"),
+    amountInvalid: t("validation.amountInvalid"),
+    amountPrecision: t("validation.amountPrecision"),
+    amountPositive: t("validation.amountPositive"),
+    dateRequired: t("validation.dateRequired"),
+    dateInvalid: t("validation.dateInvalid"),
+  });
+
+  return { schema, t };
+}
 
 export async function createTransaction(
   workspaceId: string,
   _previousState: TransactionFormState,
   formData: FormData,
 ): Promise<TransactionFormState> {
-  const user = await requireUser();
+  const [user, { schema: CreateTransactionSchema, t }] = await Promise.all([
+    requireUser(),
+    getTransactionActionContext(),
+  ]);
 
   const result = v.safeParse(CreateTransactionSchema, {
     amount: formData.get("amount"),
@@ -77,20 +97,20 @@ export async function createTransaction(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot create transactions.",
+      formError: t("cannotCreate"),
     };
   }
 
   if (!wallet) {
     return {
       fieldErrors: {
-        walletId: ["The selected wallet is unavailable."],
+        walletId: [t("walletUnavailable")],
       },
     };
   }
@@ -98,7 +118,7 @@ export async function createTransaction(
   if (!category) {
     return {
       fieldErrors: {
-        categoryId: ["The selected category is unavailable."],
+        categoryId: [t("categoryUnavailable")],
       },
     };
   }
@@ -117,17 +137,15 @@ export async function createTransaction(
     console.error("Unable to create transaction:", error);
 
     return {
-      formError: "Unable to save this transaction. Please try again.",
+      formError: t("saveFailed"),
     };
   }
 
   revalidatePath(`/w/${workspaceId}/overview`);
   revalidatePath(`/w/${workspaceId}/activity`);
 
-  const transactionLabel = category.transactionType.direction === "INCOME" ? "Income" : "Expense";
-
   return {
-    successMessage: `${transactionLabel} recorded successfully.`,
+    successMessage: category.transactionType.direction === "INCOME" ? t("incomeRecorded") : t("expenseRecorded"),
   };
 }
 
@@ -137,13 +155,16 @@ export async function updateTransaction(
   _previousState: TransactionFormState,
   formData: FormData,
 ): Promise<TransactionFormState> {
-  const user = await requireUser();
+  const [user, { schema: CreateTransactionSchema, t }] = await Promise.all([
+    requireUser(),
+    getTransactionActionContext(),
+  ]);
 
   const transactionIdResult = v.safeParse(DatabaseIdSchema, transactionId);
 
   if (!transactionIdResult.success) {
     return {
-      formError: "The transaction is invalid.",
+      formError: t("transactionInvalid"),
     };
   }
 
@@ -223,26 +244,26 @@ export async function updateTransaction(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot edit transactions.",
+      formError: t("cannotEdit"),
     };
   }
 
   if (!transaction) {
     return {
-      formError: "This transaction is unavailable.",
+      formError: t("transactionUnavailable"),
     };
   }
 
   if (!wallet) {
     return {
       fieldErrors: {
-        walletId: ["The selected wallet is unavailable."],
+        walletId: [t("walletUnavailable")],
       },
     };
   }
@@ -250,7 +271,7 @@ export async function updateTransaction(
   if (!category) {
     return {
       fieldErrors: {
-        categoryId: ["The selected category is unavailable."],
+        categoryId: [t("categoryUnavailable")],
       },
     };
   }
@@ -271,7 +292,7 @@ export async function updateTransaction(
     console.error("Unable to update transaction:", error);
 
     return {
-      formError: "Unable to update this transaction. Please try again.",
+      formError: t("updateFailed"),
     };
   }
 
@@ -286,13 +307,13 @@ export async function deleteTransaction(
   _previousState: DeleteTransactionState,
   _formData: FormData,
 ): Promise<DeleteTransactionState> {
-  const user = await requireUser();
+  const [user, t] = await Promise.all([requireUser(), getTranslations("Transactions.feedback")]);
 
   const transactionIdResult = v.safeParse(DatabaseIdSchema, transactionId);
 
   if (!transactionIdResult.success) {
     return {
-      formError: "The transaction is invalid.",
+      formError: t("transactionInvalid"),
     };
   }
 
@@ -310,13 +331,13 @@ export async function deleteTransaction(
 
   if (!membership) {
     return {
-      formError: "You do not have access to this workspace.",
+      formError: t("noAccess"),
     };
   }
 
   if (membership.role === WorkspaceRole.VIEWER) {
     return {
-      formError: "Your workspace role cannot delete transactions.",
+      formError: t("cannotDelete"),
     };
   }
 
@@ -337,14 +358,14 @@ export async function deleteTransaction(
 
     if (result.count !== 1) {
       return {
-        formError: "This transaction is unavailable.",
+        formError: t("transactionUnavailable"),
       };
     }
   } catch (error) {
     console.error("Unable to delete transaction:", error);
 
     return {
-      formError: "Unable to delete this transaction. Please try again.",
+      formError: t("deleteFailed"),
     };
   }
 

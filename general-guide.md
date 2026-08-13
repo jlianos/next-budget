@@ -57,6 +57,7 @@ The user can explicitly ask Codex to implement a change directly instead of foll
 - Use `getTranslations` in Server Components and Server Actions, and `useTranslations` only in Client Components.
 - Create localized Valibot schema factories when validation messages are user-visible; avoid fixed-language validation strings in shared schemas.
 - Translate visible text, placeholders, pending states, accessible labels, screen-reader announcements, validation errors, and action feedback together as one feature slice.
+- Localize page and root metadata, and connect dialog titles and descriptions with `aria-labelledby` and `aria-describedby`.
 - Use locale-aware formatters for user-visible dates and numbers without changing UTC storage, Athens calendar boundaries, URL date formats, or `Prisma.Decimal` calculations.
 - After each translated slice, check both languages in the running app and run focused Biome and TypeScript checks.
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { FormErrors } from "@/components/forms/form-errors";
 
@@ -27,6 +28,7 @@ type TransferFormProps = {
 };
 
 export function TransferForm({ workspaceId, currency, defaultOccurredAt, wallets, transfer }: TransferFormProps) {
+  const t = useTranslations("Transfers.forms");
   const transferAction = transfer
     ? updateTransfer.bind(null, workspaceId, transfer.id.toString())
     : createTransfer.bind(null, workspaceId);
@@ -44,7 +46,7 @@ export function TransferForm({ workspaceId, currency, defaultOccurredAt, wallets
     <form action={formAction} className="space-y-5">
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="transferAmount">
-          Amount ({currency})
+          {t("amount", { currency })}
         </label>
 
         <input
@@ -68,7 +70,7 @@ export function TransferForm({ workspaceId, currency, defaultOccurredAt, wallets
 
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="transferFromWallet">
-          From wallet
+          {t("fromWallet")}
         </label>
 
         <select
@@ -81,7 +83,7 @@ export function TransferForm({ workspaceId, currency, defaultOccurredAt, wallets
           required
         >
           <option disabled value="">
-            Select the source wallet
+            {t("selectSource")}
           </option>
 
           {wallets.map((wallet) => (
@@ -96,7 +98,7 @@ export function TransferForm({ workspaceId, currency, defaultOccurredAt, wallets
 
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="transferToWallet">
-          To wallet
+          {t("toWallet")}
         </label>
 
         <select
@@ -109,7 +111,7 @@ export function TransferForm({ workspaceId, currency, defaultOccurredAt, wallets
           required
         >
           <option disabled value="">
-            Select the destination wallet
+            {t("selectDestination")}
           </option>
 
           {wallets.map((wallet) => (
@@ -124,7 +126,7 @@ export function TransferForm({ workspaceId, currency, defaultOccurredAt, wallets
 
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="transferDateTime">
-          Date and time
+          {t("dateTime")}
         </label>
 
         <input
@@ -144,7 +146,7 @@ export function TransferForm({ workspaceId, currency, defaultOccurredAt, wallets
 
       {!formAvailable && (
         <p className="text-sm text-amber-700">
-          This workspace needs at least two wallets before you can record a transfer.
+          {t("unavailable")}
         </p>
       )}
 
@@ -167,11 +169,11 @@ export function TransferForm({ workspaceId, currency, defaultOccurredAt, wallets
       >
         {pending
           ? transfer
-            ? "Updating transfer…"
-            : "Saving transfer…"
+            ? t("updating")
+            : t("saving")
           : transfer
-            ? "Update transfer"
-            : "Save transfer"}
+            ? t("update")
+            : t("save")}
       </button>
     </form>
   );

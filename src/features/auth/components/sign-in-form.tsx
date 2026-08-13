@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
+
+import { FormErrors } from "@/components/forms/form-errors";
 
 import { signIn } from "../actions";
 import { initialAuthFormState } from "../validation";
-import { FormErrors } from "../../../components/forms/form-errors";
 
 export function SignInForm() {
+  const t = useTranslations("Auth.forms");
   const [state, formAction, pending] = useActionState(signIn, initialAuthFormState);
 
   const emailErrors = state.fieldErrors?.email;
@@ -17,7 +20,7 @@ export function SignInForm() {
     <form action={formAction} className="space-y-5">
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="email">
-          Email
+          {t("email")}
         </label>
 
         <input
@@ -36,7 +39,7 @@ export function SignInForm() {
 
       <div className="space-y-2">
         <label className="text-sm font-medium" htmlFor="password">
-          Password
+          {t("password")}
         </label>
 
         <input
@@ -64,13 +67,13 @@ export function SignInForm() {
         disabled={pending}
         type="submit"
       >
-        {pending ? "Signing in…" : "Sign in"}
+        {pending ? t("signingIn") : t("signIn")}
       </button>
 
       <p className="text-center text-sm text-zinc-600">
-        Don&apos;t have an account?{" "}
+        {t("noAccount")} {" "}
         <Link className="font-medium text-zinc-950 underline" href="/sign-up">
-          Sign up
+          {t("signUp")}
         </Link>
       </p>
     </form>

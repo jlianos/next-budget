@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
+import { getFormatter, getTranslations } from "next-intl/server";
+
 import { requireUser } from "@/features/auth/dal";
 import { getOverviewSummary } from "@/features/overview/queries";
-import { formatDateTime, getDateRange } from "@/lib/dates";
-import { formatMoney } from "@/lib/money";
+import { getDateRange } from "@/lib/dates";
 
 type OverviewPageProps = {
   params: Promise<{
@@ -18,21 +19,14 @@ function getFirstValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function formatRecurrence(frequency: string, interval: number) {
-  const units: Record<string, string> = {
-    DAILY: "day",
-    WEEKLY: "week",
-    MONTHLY: "month",
-    YEARLY: "year",
-  };
-
-  const unit = units[frequency] ?? "period";
-
-  return interval === 1 ? `Every ${unit}` : `Every ${interval} ${unit}s`;
-}
-
 export default async function OverviewPage({ params, searchParams }: OverviewPageProps) {
-  const [user, { workspaceId }, query] = await Promise.all([requireUser(), params, searchParams]);
+  const [user, { workspaceId }, query, t, format] = await Promise.all([
+    requireUser(),
+    params,
+    searchParams,
+    getTranslations("Overview"),
+    getFormatter(),
+  ]);
 
   const dateRange = getDateRange(getFirstValue(query.from), getFirstValue(query.to));
 
@@ -47,20 +41,35 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
     notFound();
   }
 
+  const formatOverviewMoney = (amount: string) =>
+    format.number(Number(amount), {
+      style: "currency",
+      currency: summary.currency,
+    });
+
+  const formatOverviewDateTime = (value: string) =>
+    format.dateTime(new Date(value), {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
   const cards = [
     {
-      label: "Income",
-      value: formatMoney(summary.income, summary.currency),
+      label: t("summary.income"),
+      value: formatOverviewMoney(summary.income),
       valueClassName: "text-emerald-700",
     },
     {
-      label: "Expenses",
-      value: formatMoney(summary.expenses, summary.currency),
+      label: t("summary.expenses"),
+      value: formatOverviewMoney(summary.expenses),
       valueClassName: "text-red-700",
     },
     {
-      label: "Net cash flow",
-      value: formatMoney(summary.net, summary.currency),
+      label: t("summary.net"),
+      value: formatOverviewMoney(summary.net),
       valueClassName: Number(summary.net) >= 0 ? "text-emerald-700" : "text-red-700",
     },
   ];
@@ -68,9 +77,9 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
 
-        <p className="mt-2 text-zinc-600">Review your workspace finances for a selected period.</p>
+        <p className="mt-2 text-zinc-600">{t("description")}</p>
       </header>
 
       <form
@@ -78,7 +87,7 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
         method="get"
       >
         <label className="flex flex-1 flex-col gap-1.5 text-sm font-medium text-zinc-700">
-          From
+          {t("filters.from")}
           <input
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-950"
             defaultValue={dateRange.from}
@@ -88,7 +97,7 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
         </label>
 
         <label className="flex flex-1 flex-col gap-1.5 text-sm font-medium text-zinc-700">
-          To
+          {t("filters.to")}
           <input
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-zinc-950"
             defaultValue={dateRange.to}
@@ -98,11 +107,11 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
         </label>
 
         <button className="rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white hover:bg-zinc-700" type="submit">
-          Apply
+          {t("filters.apply")}
         </button>
       </form>
 
-      <section aria-label="Financial summary" className="grid gap-4 sm:grid-cols-3">
+      <section aria-label={t("summary.label")} className="grid gap-4 sm:grid-cols-3">
         {cards.map((card) => (
           <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm" key={card.label}>
             <p className="text-sm font-medium text-zinc-500">{card.label}</p>
@@ -115,10 +124,10 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
       <section className="space-y-3" aria-labelledby="wallet-balances-heading">
         <div>
           <h2 className="text-lg font-semibold tracking-tight" id="wallet-balances-heading">
-            Wallet balances
+            {t("wallets.title")}
           </h2>
 
-          <p className="mt-1 text-sm text-zinc-600">Balances include all recorded activity.</p>
+          <p className="mt-1 text-sm text-zinc-600">{t("wallets.description")}</p>
         </div>
 
         {summary.wallets.length > 0 ? (
@@ -135,7 +144,7 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
                       negative ? "text-red-700" : "text-zinc-950"
                     }`}
                   >
-                    {formatMoney(wallet.balance, summary.currency)}
+                    {formatOverviewMoney(wallet.balance)}
                   </p>
                 </article>
               );
@@ -143,9 +152,9 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
           </div>
         ) : (
           <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-6 text-center">
-            <p className="font-medium text-zinc-950">No wallets yet</p>
+            <p className="font-medium text-zinc-950">{t("wallets.emptyTitle")}</p>
 
-            <p className="mt-1 text-sm text-zinc-600">Create a wallet to begin tracking balances.</p>
+            <p className="mt-1 text-sm text-zinc-600">{t("wallets.emptyDescription")}</p>
           </div>
         )}
       </section>
@@ -153,10 +162,10 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
       <section aria-labelledby="expense-categories-heading" className="space-y-3">
         <div>
           <h2 className="text-lg font-semibold tracking-tight" id="expense-categories-heading">
-            Expenses by category
+            {t("categories.title")}
           </h2>
 
-          <p className="mt-1 text-sm text-zinc-600">Spending during the selected period.</p>
+          <p className="mt-1 text-sm text-zinc-600">{t("categories.description")}</p>
         </div>
 
         {summary.expenseCategories.length > 0 ? (
@@ -168,6 +177,11 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
 
               const normalizedPercentage = Math.min(100, Math.max(0, percentage));
 
+              const formattedPercentage = format.number(normalizedPercentage / 100, {
+                style: "percent",
+                maximumFractionDigits: 1,
+              });
+
               return (
                 <li key={category.id}>
                   <div className="flex items-start justify-between gap-4">
@@ -178,14 +192,17 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
                     </div>
 
                     <div className="text-right">
-                      <p className="font-medium text-zinc-950">{formatMoney(category.amount, summary.currency)}</p>
+                      <p className="font-medium text-zinc-950">{formatOverviewMoney(category.amount)}</p>
 
-                      <p className="mt-0.5 text-xs text-zinc-500">{normalizedPercentage.toFixed(1)}%</p>
+                      <p className="mt-0.5 text-xs text-zinc-500">{formattedPercentage}</p>
                     </div>
                   </div>
 
                   <div
-                    aria-label={`${category.name}: ${normalizedPercentage.toFixed(1)}% of expenses`}
+                    aria-label={t("categories.barLabel", {
+                      category: category.name,
+                      percentage: formattedPercentage,
+                    })}
                     className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-100"
                     role="img"
                   >
@@ -202,9 +219,9 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
           </ul>
         ) : (
           <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-6 text-center">
-            <p className="font-medium text-zinc-950">No expenses in this period</p>
+            <p className="font-medium text-zinc-950">{t("categories.emptyTitle")}</p>
 
-            <p className="mt-1 text-sm text-zinc-600">Try selecting another date range.</p>
+            <p className="mt-1 text-sm text-zinc-600">{t("categories.emptyDescription")}</p>
           </div>
         )}
       </section>
@@ -212,10 +229,10 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
       <section aria-labelledby="recent-activity-heading" className="space-y-3">
         <div>
           <h2 className="text-lg font-semibold tracking-tight" id="recent-activity-heading">
-            Recent activity
+            {t("activity.title")}
           </h2>
 
-          <p className="mt-1 text-sm text-zinc-600">Latest transactions and transfers during the selected period.</p>
+          <p className="mt-1 text-sm text-zinc-600">{t("activity.description")}</p>
         </div>
 
         {summary.recentActivity.length > 0 ? (
@@ -233,7 +250,7 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
                 <li className="flex items-start justify-between gap-4 p-4" key={`${activity.kind}-${activity.id}`}>
                   <div className="min-w-0">
                     <p className="font-medium text-zinc-950">
-                      {activity.kind === "transaction" ? activity.categoryName : "Transfer"}
+                      {activity.kind === "transaction" ? activity.categoryName : t("activity.transfer")}
                     </p>
 
                     <p className="mt-1 truncate text-sm text-zinc-500">
@@ -243,18 +260,18 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
                     </p>
 
                     <p className="mt-1 text-xs text-zinc-500">
-                      <time dateTime={activity.occurredAt}>{formatDateTime(activity.occurredAt)}</time>
+                      <time dateTime={activity.occurredAt}>{formatOverviewDateTime(activity.occurredAt)}</time>
 
                       {" · "}
                       {activity.createdByEmail}
 
-                      {activity.kind === "transaction" && activity.recurring && " · Recurring"}
+                      {activity.kind === "transaction" && activity.recurring && ` · ${t("activity.recurring")}`}
                     </p>
                   </div>
 
                   <p className={`shrink-0 font-semibold ${amountClassName}`}>
                     {amountPrefix}
-                    {formatMoney(activity.amount, summary.currency)}
+                    {formatOverviewMoney(activity.amount)}
                   </p>
                 </li>
               );
@@ -262,9 +279,9 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
           </ul>
         ) : (
           <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-6 text-center">
-            <p className="font-medium text-zinc-950">No activity in this period</p>
+            <p className="font-medium text-zinc-950">{t("activity.emptyTitle")}</p>
 
-            <p className="mt-1 text-sm text-zinc-600">Try selecting another date range.</p>
+            <p className="mt-1 text-sm text-zinc-600">{t("activity.emptyDescription")}</p>
           </div>
         )}
       </section>
@@ -272,16 +289,27 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
       <section aria-labelledby="upcoming-recurring-heading" className="space-y-3">
         <div>
           <h2 className="text-lg font-semibold tracking-tight" id="upcoming-recurring-heading">
-            Upcoming recurring
+            {t("upcoming.title")}
           </h2>
 
-          <p className="mt-1 text-sm text-zinc-600">Your next scheduled income and expenses.</p>
+          <p className="mt-1 text-sm text-zinc-600">{t("upcoming.description")}</p>
         </div>
 
         {summary.upcomingRecurring.length > 0 ? (
           <ul className="divide-y divide-zinc-200 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
             {summary.upcomingRecurring.map((item) => {
               const income = item.direction === "INCOME";
+
+              const recurrence =
+                item.frequency === "DAILY"
+                  ? t("recurrence.daily", { interval: item.interval })
+                  : item.frequency === "WEEKLY"
+                    ? t("recurrence.weekly", { interval: item.interval })
+                    : item.frequency === "MONTHLY"
+                      ? t("recurrence.monthly", { interval: item.interval })
+                      : item.frequency === "YEARLY"
+                        ? t("recurrence.yearly", { interval: item.interval })
+                        : t("recurrence.fallback", { interval: item.interval });
 
               return (
                 <li className="flex items-start justify-between gap-4 p-4" key={item.id}>
@@ -291,17 +319,17 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
                     <p className="mt-1 text-sm text-zinc-500">
                       {item.walletName}
                       {" · "}
-                      {formatRecurrence(item.frequency, item.interval)}
+                      {recurrence}
                     </p>
 
                     <p className="mt-1 text-xs text-zinc-500">
-                      Next: <time dateTime={item.nextAt}>{formatDateTime(item.nextAt)}</time>
+                      {t("upcoming.next")} <time dateTime={item.nextAt}>{formatOverviewDateTime(item.nextAt)}</time>
                     </p>
                   </div>
 
                   <p className={`shrink-0 font-semibold ${income ? "text-emerald-700" : "text-red-700"}`}>
                     {income ? "+" : "−"}
-                    {formatMoney(item.amount, summary.currency)}
+                    {formatOverviewMoney(item.amount)}
                   </p>
                 </li>
               );
@@ -309,9 +337,9 @@ export default async function OverviewPage({ params, searchParams }: OverviewPag
           </ul>
         ) : (
           <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-6 text-center">
-            <p className="font-medium text-zinc-950">No upcoming recurring items</p>
+            <p className="font-medium text-zinc-950">{t("upcoming.emptyTitle")}</p>
 
-            <p className="mt-1 text-sm text-zinc-600">Scheduled income and expenses will appear here.</p>
+            <p className="mt-1 text-sm text-zinc-600">{t("upcoming.emptyDescription")}</p>
           </div>
         )}
       </section>

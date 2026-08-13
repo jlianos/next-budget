@@ -2,15 +2,36 @@
 
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import * as v from "valibot";
 
 import prisma from "@/db/prisma";
 import { Prisma } from "@/generated/prisma/client";
 
 import { createSession, deleteSession } from "./session";
-import { type AuthFormState, SignInSchema, SignUpSchema } from "./validation";
+import { type AuthFormState, createAuthSchemas } from "./validation";
+
+async function getAuthActionContext() {
+  const t = await getTranslations("Auth.feedback");
+  const schemas = createAuthSchemas({
+    emailRequired: t("validation.emailRequired"),
+    emailInvalid: t("validation.emailInvalid"),
+    emailTooLong: t("validation.emailTooLong"),
+    passwordRequired: t("validation.passwordRequired"),
+    signInPasswordRequired: t("validation.signInPasswordRequired"),
+    passwordTooShort: t("validation.passwordTooShort"),
+    passwordTooLong: t("validation.passwordTooLong"),
+    confirmPasswordRequired: t("validation.confirmPasswordRequired"),
+    passwordsDoNotMatch: t("validation.passwordsDoNotMatch"),
+  });
+
+  return { schemas, t };
+}
 
 export async function signUp(_previousState: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  const { schemas, t } = await getAuthActionContext();
+  const { SignUpSchema } = schemas;
+
   const result = v.safeParse(SignUpSchema, {
     email: formData.get("email"),
     password: formData.get("password"),
@@ -42,7 +63,7 @@ export async function signUp(_previousState: AuthFormState, formData: FormData):
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return {
         fieldErrors: {
-          email: ["An account with this email already exists."],
+          email: [t("accountExists")],
         },
       };
     }
@@ -50,7 +71,7 @@ export async function signUp(_previousState: AuthFormState, formData: FormData):
     console.error("Unable to create user:", error);
 
     return {
-      formError: "Unable to create your account. Please try again.",
+      formError: t("createAccountFailed"),
     };
   }
 
@@ -59,6 +80,9 @@ export async function signUp(_previousState: AuthFormState, formData: FormData):
 }
 
 export async function signIn(_previousState: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  const { schemas, t } = await getAuthActionContext();
+  const { SignInSchema } = schemas;
+
   const result = v.safeParse(SignInSchema, {
     email: formData.get("email"),
     password: formData.get("password"),
@@ -91,13 +115,13 @@ export async function signIn(_previousState: AuthFormState, formData: FormData):
     console.error("Unable to find user:", error);
 
     return {
-      formError: "Unable to sign in. Please try again.",
+      formError: t("signInFailed"),
     };
   }
 
   if (!user) {
     return {
-      formError: "Invalid email or password.",
+      formError: t("invalidCredentials"),
     };
   }
 
@@ -105,7 +129,7 @@ export async function signIn(_previousState: AuthFormState, formData: FormData):
 
   if (!passwordMatches) {
     return {
-      formError: "Invalid email or password.",
+      formError: t("invalidCredentials"),
     };
   }
 

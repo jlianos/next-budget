@@ -29,14 +29,16 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Add selected-period wallet flow summaries.
 - [x] Manually verify report totals, chart buckets, and Activity drill-through links.
 
-### Next focus: recurring transactions
+### Current focus: recurring transactions
 
-- [ ] Confirm the V1 scheduling and occurrence-generation approach.
-- [ ] Create recurring income and expense definitions.
-- [ ] Build active, paused, upcoming, and ended views.
-- [ ] Edit, pause, resume, and end schedules.
-- [ ] Generate occurrences idempotently and link them to their recurring source.
-- [ ] Test interval, timezone, end-date, and duplicate-generation boundaries.
+- [x] Confirm the V1 scheduling and occurrence-generation approach.
+- [x] Create recurring income and expense definitions.
+- [x] Build active/inactive schedule management and upcoming views.
+- [x] Add start and stop controls; recurring definitions remain immutable in V1.
+- [x] Generate occurrences idempotently and link them to their recurring source.
+- [x] Run generation from a standalone polling worker with one-pass test mode.
+- [x] Verify Athens DST/month-end scheduling and duplicate prevention.
+- [ ] Complete interval and end-date generation boundary checks.
 
 ### Read-only workspace overview
 
@@ -65,7 +67,7 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Confirm version-one permissions: `ADMIN` and `MEMBER` have the same rights; `VIEWER` is read-only.
 - [x] Confirm that transfers must stay within one workspace.
 - [x] Adopt simple version-one wallet balances; defer opening balances and explicit liability/credit-card behavior.
-- [ ] Choose the recurring transaction execution strategy.
+- [x] Choose a reusable generator executed by a standalone polling worker for recurring transactions.
 - [ ] Choose archive/delete behavior for workspace membership and the workspace itself.
 - [ ] Confirm whether SQLite is only for local development or also intended for the first deployment.
 
@@ -149,13 +151,13 @@ This is the working checklist for the application. Product direction, architectu
 
 ### Phase 6 — Recurring transactions
 
-- [ ] Create recurring income and expense definitions.
-- [ ] Build active, paused, upcoming, and ended views.
-- [ ] Edit, pause, resume, and end schedules.
-- [ ] Implement idempotent occurrence generation.
-- [ ] Integrate the approved scheduler strategy.
-- [ ] Add retry and failure handling.
-- [ ] Link generated transactions to their recurring source.
+- [x] Create recurring income and expense definitions.
+- [x] Build active/inactive management and upcoming views.
+- [x] Add start and stop controls; defer editing and deletion.
+- [x] Implement idempotent occurrence generation.
+- [x] Integrate the standalone polling-worker strategy.
+- [x] Keep failed schedules due so later worker passes retry them.
+- [x] Link generated transactions to their recurring source.
 - [ ] Test interval, timezone, end-date, and duplicate-generation boundaries.
 
 ### Phase 7 — Workspace administration
@@ -235,3 +237,4 @@ Items in this section should move into the roadmap only after an approved produc
 - **2026-08-12:** Passed TypeScript, Biome lint, and the Next.js production build after completing transaction type and category management.
 - **2026-08-13:** Added Recharts-based V1 reports with Athens-aware daily/monthly cash-flow trends, exact server-side Decimal totals, expense type/category breakdowns, URL-backed periods, Activity drill-through links, and empty states; TypeScript, focused lint, and the production build pass.
 - **2026-08-13:** Added selected-period wallet movement reports with income, expenses, incoming/outgoing transfers, net change, and wallet-filtered Activity drill-through; final TypeScript, focused lint, and production build pass.
+- **2026-08-13:** Implemented recurring income/expense definitions, active/inactive start-stop management, Athens-aware anchored schedules, idempotent catch-up generation, and a graceful standalone polling worker with one-pass mode; manually verified creation and duplicate prevention, and passed focused Biome checks and the production build.

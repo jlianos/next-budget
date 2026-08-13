@@ -98,7 +98,7 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Build the responsive desktop and mobile application shell.
 - [x] Add workspace navigation and signed-in user controls.
 - [x] Make route workspace context authoritative for workspace-scoped shells.
-- [ ] Add persistent desktop and mobile Add actions.
+- [x] Add a persistent desktop and mobile quick-add transaction action.
 - [ ] Create shared loading, empty, error, permission-denied, and not-found states.
 - [ ] Add shared input validation, money formatting, and date formatting.
 
@@ -238,3 +238,4 @@ Items in this section should move into the roadmap only after an approved produc
 - **2026-08-13:** Added Recharts-based V1 reports with Athens-aware daily/monthly cash-flow trends, exact server-side Decimal totals, expense type/category breakdowns, URL-backed periods, Activity drill-through links, and empty states; TypeScript, focused lint, and the production build pass.
 - **2026-08-13:** Added selected-period wallet movement reports with income, expenses, incoming/outgoing transfers, net change, and wallet-filtered Activity drill-through; final TypeScript, focused lint, and production build pass.
 - **2026-08-13:** Implemented recurring income/expense definitions, active/inactive start-stop management, Athens-aware anchored schedules, idempotent catch-up generation, and a graceful standalone polling worker with one-pass mode; manually verified creation and duplicate prevention, and passed focused Biome checks and the production build.
+- **2026-08-13:** Added a workspace-wide floating quick-add transaction dialog for `ADMIN` and `MEMBER`, with fresh Athens time defaults, reusable form accessibility IDs, automatic close/reset after creation, and viewer-safe rendering; manually verified the flow and passed the production build.

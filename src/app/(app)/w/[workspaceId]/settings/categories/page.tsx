@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/features/auth/dal";
-import { CreateCategoryForm } from "@/features/categories/components/create-category-form";
+import { CreateCategoryDialog } from "@/features/categories/components/create-category-dialog";
 import { CreateTransactionTypeForm } from "@/features/categories/components/create-transaction-type-form";
 import { DeleteCategoryForm } from "@/features/categories/components/delete-category-form";
 import { DeleteTransactionTypeForm } from "@/features/categories/components/delete-transaction-type-form";
 import { EditCategoryForm } from "@/features/categories/components/edit-category-form";
-import { RenameTransactionTypeForm } from "@/features/categories/components/rename-transaction-type";
+import { RenameTransactionTypeDialog } from "@/features/categories/components/rename-transaction-type-dialog";
 import { getCategoryManagementData } from "@/features/categories/queries";
 import { TransactionDirection, WorkspaceRole } from "@/generated/prisma/client";
 
@@ -180,22 +180,19 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                     </div>
 
                     {canManage && (
-                      <div className="mt-5 border-t border-zinc-200 pt-4">
-                        <div>
-                          <h4 className="mb-3 text-sm font-semibold text-zinc-950">Rename type</h4>
+                      <div className="mt-5 flex flex-wrap gap-2 border-t border-zinc-200 pt-4">
+                        <RenameTransactionTypeDialog
+                          currentName={transactionType.name}
+                          transactionTypeId={transactionType.id}
+                          workspaceId={workspaceId}
+                        />
 
-                          <RenameTransactionTypeForm
-                            currentName={transactionType.name}
-                            transactionTypeId={transactionType.id}
-                            workspaceId={workspaceId}
-                          />
-                        </div>
-
-                        <div className="mt-5 border-t border-zinc-200 pt-4">
-                          <h4 className="mb-3 text-sm font-semibold text-zinc-950">Add category</h4>
-
-                          <CreateCategoryForm transactionTypeId={transactionType.id} workspaceId={workspaceId} />
-                        </div>
+                        <CreateCategoryDialog
+                          categoryCount={transactionType.categoryCount}
+                          transactionTypeId={transactionType.id}
+                          transactionTypeName={transactionType.name}
+                          workspaceId={workspaceId}
+                        />
                       </div>
                     )}
 

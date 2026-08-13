@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState } from "react";
-
 import { FormErrors } from "@/components/forms/form-errors";
 
 import { updateTransactionType } from "../actions";
@@ -11,6 +10,7 @@ type RenameTransactionTypeFormProps = {
   workspaceId: string;
   transactionTypeId: number;
   currentName: string;
+  onRenamed?: () => void;
 };
 
 export function RenameTransactionTypeForm({

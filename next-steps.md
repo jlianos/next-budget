@@ -15,6 +15,7 @@ This document is the high-level product and implementation map. It is not a comm
 5. **Useful defaults, editable detail** — remember recent wallet/category choices and default dates sensibly, while allowing full editing.
 6. **Safe collaboration** — permissions must be enforced on the server, and potentially destructive actions must be clear and deliberate.
 7. **Derived insights before extra complexity** — prioritize reports that can be calculated from the current schema before adding budgets, goals, or forecasting models.
+8. **Language is a presentation preference** — English and Greek share the same routes, data, permissions, and business behavior; changing language must not change application state beyond the locale preference.
 
 ## Primary user journeys
 
@@ -236,6 +237,10 @@ Feature folders can contain their queries, server actions, validation schemas, d
 ## Technical approach
 
 - Use Server Components for initial reads and page composition.
+- Use `next-intl` for English and Greek presentation. Keep locale selection in the `nextbudget-locale` HTTP-only cookie and keep application URLs locale-neutral.
+- Keep translation keys grouped by feature, use server translations in Server Components and Server Actions, and use client translations only inside interactive Client Components.
+- Build localized Valibot schemas at the server boundary so validation messages use the locale active when the action runs.
+- Use locale-aware date and number formatting for user-visible values while keeping stored instants, URL dates, and financial calculations unchanged.
 - Keep Prisma in server-only modules and return explicit view models rather than database records directly to interactive client components.
 - Use Server Actions for form-driven application mutations; use Route Handlers only when an actual HTTP endpoint is needed.
 - Recheck authentication, role, and workspace ownership inside every action.
@@ -315,10 +320,11 @@ Current status: transfer creation, editing, and deletion are complete. Wallet ma
 - Membership and role management.
 - Safe archival or deletion flows based on the approved data-retention policy.
 
-Current status: transaction type and category management is complete. Types have immutable Income/Expense directions, categories remain under their original type, names follow the schema's scoped uniqueness rules, and hard deletion is limited to unreferenced categories and empty types. Workspace and membership management remain.
+Current status: transaction type and category management, workspace settings, and the V1 read-only member list are complete. Types have immutable Income/Expense directions, categories remain under their original type, names follow the schema's scoped uniqueness rules, and hard deletion is limited to safe unreferenced or empty structures. Membership invitations and role management remain deferred.
 
 ### Phase 8 — Hardening and release readiness
 
+- Complete English and Greek localization and audit untranslated UI, validation, action feedback, dates, and monetary presentation.
 - Authorization and workspace-isolation tests.
 - End-to-end tests for primary user journeys.
 - Accessibility, responsive layout, and keyboard navigation review.

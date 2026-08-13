@@ -49,6 +49,17 @@ The user can explicitly ask Codex to implement a change directly instead of foll
 - Interpret `datetime-local` form values as Athens wall time, convert them to UTC for storage, and convert stored UTC instants back to Athens time for display.
 - Revisit the application timezone when user or workspace timezone preferences are introduced.
 
+## Localization conventions
+
+- Use `next-intl` for English and Greek translations.
+- Keep locale-neutral routes; store the selected locale in the `nextbudget-locale` HTTP-only cookie.
+- Organize message keys by feature in `messages/en.json` and `messages/el.json`, and keep both catalogs structurally aligned.
+- Use `getTranslations` in Server Components and Server Actions, and `useTranslations` only in Client Components.
+- Create localized Valibot schema factories when validation messages are user-visible; avoid fixed-language validation strings in shared schemas.
+- Translate visible text, placeholders, pending states, accessible labels, screen-reader announcements, validation errors, and action feedback together as one feature slice.
+- Use locale-aware formatters for user-visible dates and numbers without changing UTC storage, Athens calendar boundaries, URL date formats, or `Prisma.Decimal` calculations.
+- After each translated slice, check both languages in the running app and run focused Biome and TypeScript checks.
+
 ## Next.js conventions
 
 - Read the bundled Next.js 16 documentation in `node_modules/next/dist/docs` before relying on framework behavior.

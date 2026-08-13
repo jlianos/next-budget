@@ -6,6 +6,20 @@ This is the working checklist for the application. Product direction, architectu
 
 ## Current focus
 
+### In progress: English and Greek localization
+
+- [x] Install and configure `next-intl` with English and Greek message catalogs.
+- [x] Store the selected locale in an HTTP-only cookie without changing route URLs.
+- [x] Add the locale provider and an application-shell language switcher.
+- [x] Translate the application shell and workspace navigation.
+- [x] Translate the Workspaces screen and its create, join, select, role, and copy-ID UI.
+- [x] Translate workspace settings, member information, rename/delete forms, validation, and action feedback.
+- [x] Translate transaction type and category settings, dialogs, validation, and action feedback.
+- [ ] Translate authentication screens and feedback.
+- [ ] Translate Overview, Activity, Reports, Recurring, Wallets, transaction, and transfer flows.
+- [ ] Replace remaining fixed-locale date and money presentation with locale-aware formatting where appropriate.
+- [ ] Perform a final English/Greek message-key, responsive-layout, and accessibility review.
+
 ### Completed: workspace settings and members
 
 - [x] Add a read-only workspace member list for every workspace role.
@@ -180,6 +194,7 @@ This is the working checklist for the application. Product direction, architectu
 
 ### Phase 8 — Hardening and release readiness
 
+- [ ] Complete English and Greek localization across all application screens.
 - [ ] Add end-to-end tests for primary user journeys.
 - [ ] Complete authorization and workspace-isolation coverage.
 - [ ] Review accessibility and keyboard navigation.
@@ -250,3 +265,4 @@ Items in this section should move into the roadmap only after an approved produc
 - **2026-08-13:** Added a workspace-wide floating quick-add transaction dialog for `ADMIN` and `MEMBER`, with fresh Athens time defaults, reusable form accessibility IDs, automatic close/reset after creation, and viewer-safe rendering; manually verified the flow and passed the production build.
 - **2026-08-13:** Added repeatable real-database recurring-generator integration scenarios to the development seed and verified larger intervals, month-end anchoring, inclusive and expired end dates, inactive schedules, the 100-occurrence catch-up limit, continuation, and idempotency with all assertions passing.
 - **2026-08-13:** Implemented and manually verified workspace settings with a read-only member list, role-protected renaming, and atomic deletion limited to workspaces without transactions, transfers, or recurring definitions; the production build passes.
+- **2026-08-13:** Added cookie-based English/Greek localization with `next-intl`, a live application-shell language switcher, and translated the application shell, Workspaces, workspace settings, and transaction category management, including localized Valibot validation and Server Action feedback; focused Biome and TypeScript checks pass.

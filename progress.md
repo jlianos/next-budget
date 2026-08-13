@@ -29,7 +29,7 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Add selected-period wallet flow summaries.
 - [x] Manually verify report totals, chart buckets, and Activity drill-through links.
 
-### Current focus: recurring transactions
+### Completed: recurring transactions
 
 - [x] Confirm the V1 scheduling and occurrence-generation approach.
 - [x] Create recurring income and expense definitions.
@@ -38,7 +38,7 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Generate occurrences idempotently and link them to their recurring source.
 - [x] Run generation from a standalone polling worker with one-pass test mode.
 - [x] Verify Athens DST/month-end scheduling and duplicate prevention.
-- [ ] Complete interval and end-date generation boundary checks.
+- [x] Complete interval and end-date generation boundary checks.
 
 ### Read-only workspace overview
 
@@ -158,7 +158,7 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Integrate the standalone polling-worker strategy.
 - [x] Keep failed schedules due so later worker passes retry them.
 - [x] Link generated transactions to their recurring source.
-- [ ] Test interval, timezone, end-date, and duplicate-generation boundaries.
+- [x] Test interval, timezone, end-date, catch-up-limit, and duplicate-generation boundaries.
 
 ### Phase 7 — Workspace administration
 
@@ -239,3 +239,4 @@ Items in this section should move into the roadmap only after an approved produc
 - **2026-08-13:** Added selected-period wallet movement reports with income, expenses, incoming/outgoing transfers, net change, and wallet-filtered Activity drill-through; final TypeScript, focused lint, and production build pass.
 - **2026-08-13:** Implemented recurring income/expense definitions, active/inactive start-stop management, Athens-aware anchored schedules, idempotent catch-up generation, and a graceful standalone polling worker with one-pass mode; manually verified creation and duplicate prevention, and passed focused Biome checks and the production build.
 - **2026-08-13:** Added a workspace-wide floating quick-add transaction dialog for `ADMIN` and `MEMBER`, with fresh Athens time defaults, reusable form accessibility IDs, automatic close/reset after creation, and viewer-safe rendering; manually verified the flow and passed the production build.
+- **2026-08-13:** Added repeatable real-database recurring-generator integration scenarios to the development seed and verified larger intervals, month-end anchoring, inclusive and expired end dates, inactive schedules, the 100-occurrence catch-up limit, continuation, and idempotency with all assertions passing.

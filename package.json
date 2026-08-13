@@ -11,7 +11,8 @@
     "seed": "tsx src/db/seed.ts",
     "worker:recurring": "tsx src/workers/recurring-worker.ts",
     "worker:recurring:once": "tsx src/workers/recurring-worker.ts --once",
-    "reset": "rimraf prisma/migrations && prisma migrate reset -f && prisma migrate dev --name init && prisma generate"
+    "test:gen": "npm run seed && tsx src/tests/recurring-generation-test.ts",
+    "reset": "prisma migrate reset --force && prisma generate"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.9.1",

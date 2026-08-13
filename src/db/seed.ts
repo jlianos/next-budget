@@ -1,10 +1,15 @@
 import bcrypt from "bcryptjs";
-import { Currency, Prisma, TransactionDirection, WorkspaceRole } from "../generated/prisma/client";
+import { Currency, Prisma, RecurrenceFrequency, TransactionDirection, WorkspaceRole } from "../generated/prisma/client";
+import { parseDateTime } from "../lib/dates";
 import prisma from "./prisma";
 
 const DEV_PASSWORD = "password123";
 
 const d = (value: string | number) => new Prisma.Decimal(value);
+
+const GENERATOR_WORKSPACE_ID = "recurring-generator-tests";
+
+const at = (value: string) => parseDateTime(value);
 
 /**
  * Development-only password hash.
@@ -759,6 +764,111 @@ async function main() {
     ],
   });
 
+  // ===========================================================================
+  // RECURRING GENERATOR TEST WORKSPACE
+  // ===========================================================================
+
+  await removePreviousGeneratorScenario();
+
+  const generatorWorkspace = await prisma.workspace.create({
+    data: {
+      id: GENERATOR_WORKSPACE_ID,
+      name: "Recurring Generator Tests",
+      currency: Currency.EUR,
+      users: {
+        create: {
+          userId: alex.id,
+          role: WorkspaceRole.ADMIN,
+        },
+      },
+    },
+  });
+
+  const generatorWallet = await prisma.wallet.create({
+    data: {
+      name: "Generator Wallet",
+      workspaceId: generatorWorkspace.id,
+    },
+  });
+
+  const generatorType = await prisma.transactionType.create({
+    data: {
+      name: "Generator Expenses",
+      direction: TransactionDirection.EXPENSE,
+      workspaceId: generatorWorkspace.id,
+    },
+  });
+
+  const generatorCategory = await prisma.transactionCategory.create({
+    data: {
+      name: "Generator Test",
+      description: "Recurring-generator integration scenarios.",
+      transactionTypeId: generatorType.id,
+    },
+  });
+
+  const generatorCommon = {
+    walletId: generatorWallet.id,
+    categoryId: generatorCategory.id,
+    createdById: alex.id,
+  };
+
+  await prisma.recurringTransaction.createMany({
+    data: [
+      {
+        ...generatorCommon,
+        amount: d("201.00"),
+        frequency: RecurrenceFrequency.DAILY,
+        interval: 2,
+        startsAt: at("2026-01-01T09:00"),
+        nextAt: at("2026-01-01T09:00"),
+      },
+      {
+        ...generatorCommon,
+        amount: d("202.00"),
+        frequency: RecurrenceFrequency.MONTHLY,
+        interval: 2,
+        startsAt: at("2026-01-31T09:00"),
+        nextAt: at("2026-01-31T09:00"),
+      },
+      {
+        ...generatorCommon,
+        amount: d("203.00"),
+        frequency: RecurrenceFrequency.DAILY,
+        interval: 2,
+        startsAt: at("2026-01-01T09:00"),
+        endsAt: at("2026-01-05T09:00"),
+        nextAt: at("2026-01-01T09:00"),
+      },
+      {
+        ...generatorCommon,
+        amount: d("204.00"),
+        frequency: RecurrenceFrequency.DAILY,
+        interval: 1,
+        startsAt: at("2026-01-05T09:00"),
+        endsAt: at("2026-01-04T09:00"),
+        nextAt: at("2026-01-05T09:00"),
+      },
+      {
+        ...generatorCommon,
+        amount: d("205.00"),
+        frequency: RecurrenceFrequency.DAILY,
+        interval: 1,
+        startsAt: at("2026-01-01T09:00"),
+        nextAt: at("2026-01-01T09:00"),
+        isActive: false,
+      },
+      {
+        ...generatorCommon,
+        amount: d("206.00"),
+        frequency: RecurrenceFrequency.DAILY,
+        interval: 1,
+        startsAt: at("2026-01-01T09:00"),
+        nextAt: at("2026-01-01T09:00"),
+      },
+    ],
+  });
+
   // ---------------------------------------------------------------------------
   // Summary
   // ---------------------------------------------------------------------------
@@ -794,6 +904,58 @@ async function main() {
   console.log(`   Transfers:              ${transferCount}`);
   console.log(`   Recurring transactions: ${recurringCount}`);
   console.log("");
+}
+
+async function removePreviousGeneratorScenario() {
+  await prisma.$transaction(async (tx) => {
+    await tx.transaction.deleteMany({
+      where: {
+        wallet: {
+          workspaceId: GENERATOR_WORKSPACE_ID,
+        },
+      },
+    });
+
+    await tx.recurringTransaction.deleteMany({
+      where: {
+        wallet: {
+          workspaceId: GENERATOR_WORKSPACE_ID,
+        },
+      },
+    });
+
+    await tx.transactionCategory.deleteMany({
+      where: {
+        transactionType: {
+          workspaceId: GENERATOR_WORKSPACE_ID,
+        },
+      },
+    });
+
+    await tx.transactionType.deleteMany({
+      where: {
+        workspaceId: GENERATOR_WORKSPACE_ID,
+      },
+    });
+
+    await tx.wallet.deleteMany({
+      where: {
+        workspaceId: GENERATOR_WORKSPACE_ID,
+      },
+    });
+
+    await tx.userWorkspace.deleteMany({
+      where: {
+        workspaceId: GENERATOR_WORKSPACE_ID,
+      },
+    });
+
+    await tx.workspace.deleteMany({
+      where: {
+        id: GENERATOR_WORKSPACE_ID,
+      },
+    });
+  });
 }
 
 main()

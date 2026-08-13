@@ -1,12 +1,12 @@
 # Implementation Progress
 
-Last updated: 2026-08-12
+Last updated: 2026-08-13
 
 This is the working checklist for the application. Product direction, architecture, and phase details live in [next-steps.md](next-steps.md).
 
 ## Current focus
 
-### Transaction type and category management
+### Completed: transaction type and category management
 
 - [x] Define the V1 hierarchy and immutable direction/parent rules.
 - [x] Build the workspace-scoped settings query and Income/Expense grouped screen.
@@ -19,13 +19,24 @@ This is the working checklist for the application. Product direction, architectu
 - [x] Keep `VIEWER` access read-only in both the UI and Server Actions.
 - [x] Manually verify creation, editing, duplicate validation, confirmation cancellation, and safe deletion.
 
-### Next focus: reports
+### Completed: reports
 
-- [ ] Define the smallest useful V1 report set and period behavior.
-- [ ] Reuse the Athens-calendar URL date range.
-- [ ] Add income, expense, and net cash-flow trends.
-- [ ] Add expense breakdowns by transaction type and category.
-- [ ] Add useful empty and low-data states.
+- [x] Define the smallest useful V1 report set and period behavior.
+- [x] Reuse the Athens-calendar URL date range.
+- [x] Add income, expense, and net cash-flow trends.
+- [x] Add expense breakdowns by transaction type and category.
+- [x] Add useful empty and low-data states.
+- [x] Add selected-period wallet flow summaries.
+- [x] Manually verify report totals, chart buckets, and Activity drill-through links.
+
+### Next focus: recurring transactions
+
+- [ ] Confirm the V1 scheduling and occurrence-generation approach.
+- [ ] Create recurring income and expense definitions.
+- [ ] Build active, paused, upcoming, and ended views.
+- [ ] Edit, pause, resume, and end schedules.
+- [ ] Generate occurrences idempotently and link them to their recurring source.
+- [ ] Test interval, timezone, end-date, and duplicate-generation boundaries.
 
 ### Read-only workspace overview
 
@@ -127,14 +138,14 @@ This is the working checklist for the application. Product direction, architectu
 
 ### Phase 5 — Reports
 
-- [ ] Add reusable period selection.
-- [ ] Show income versus expenses over time.
-- [ ] Show net cash flow over time.
-- [ ] Show expense breakdowns by transaction type and category.
-- [ ] Show wallet balance and flow summaries.
-- [ ] Link report totals to supporting filtered activity.
-- [ ] Add useful empty and low-data report states.
-- [ ] Test report totals against underlying activity.
+- [x] Add reusable period selection.
+- [x] Show income versus expenses over time.
+- [x] Show net cash flow over time.
+- [x] Show expense breakdowns by transaction type and category.
+- [x] Show selected-period wallet flow summaries; all-time balances remain on Overview and Wallet settings.
+- [x] Link report totals to supporting filtered activity.
+- [x] Add useful empty and low-data report states.
+- [x] Test report totals against underlying activity.
 
 ### Phase 6 — Recurring transactions
 
@@ -222,3 +233,5 @@ Items in this section should move into the roadmap only after an approved produc
 - **2026-08-12:** Passed TypeScript, Biome lint, and the Next.js production build after completing wallet management.
 - **2026-08-12:** Implemented and manually verified workspace-scoped transaction type and category management, including immutable type directions and category parents, optional descriptions, role-protected creation/editing, scoped uniqueness handling, reference counts, and transactional safe deletion.
 - **2026-08-12:** Passed TypeScript, Biome lint, and the Next.js production build after completing transaction type and category management.
+- **2026-08-13:** Added Recharts-based V1 reports with Athens-aware daily/monthly cash-flow trends, exact server-side Decimal totals, expense type/category breakdowns, URL-backed periods, Activity drill-through links, and empty states; TypeScript, focused lint, and the production build pass.
+- **2026-08-13:** Added selected-period wallet movement reports with income, expenses, incoming/outgoing transfers, net change, and wallet-filtered Activity drill-through; final TypeScript, focused lint, and production build pass.

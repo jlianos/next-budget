@@ -72,3 +72,49 @@ export function parseDateTime(value: string) {
 export function formatDateTimeInput(value: string | Date = new Date()) {
   return dayjs(value).tz(APP_TIME_ZONE).format(DATE_TIME_LOCAL_FORMAT);
 }
+
+export type ReportGranularity = "day" | "month";
+
+export type ReportDateBucket = {
+  key: string;
+  label: string;
+};
+
+export function getReportDateBuckets(
+  start: Date,
+  endExclusive: Date,
+): {
+  granularity: ReportGranularity;
+  buckets: ReportDateBucket[];
+} {
+  const rangeStart = dayjs(start).tz(APP_TIME_ZONE);
+  const rangeEnd = dayjs(endExclusive).tz(APP_TIME_ZONE);
+
+  const calendarDays = rangeEnd.startOf("day").diff(rangeStart.startOf("day"), "day");
+
+  const granularity: ReportGranularity = calendarDays <= 62 ? "day" : "month";
+
+  const buckets: ReportDateBucket[] = [];
+
+  let cursor = rangeStart.startOf(granularity);
+
+  while (cursor.isBefore(rangeEnd)) {
+    buckets.push({
+      key: granularity === "day" ? cursor.format("YYYY-MM-DD") : cursor.format("YYYY-MM"),
+      label: granularity === "day" ? cursor.format("D MMM") : cursor.format("MMM YYYY"),
+    });
+
+    cursor = cursor.add(1, granularity);
+  }
+
+  return {
+    granularity,
+    buckets,
+  };
+}
+
+export function getReportBucketKey(value: string | Date, granularity: ReportGranularity) {
+  const date = dayjs(value).tz(APP_TIME_ZONE);
+
+  return granularity === "day" ? date.format("YYYY-MM-DD") : date.format("YYYY-MM");
+}

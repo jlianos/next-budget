@@ -199,7 +199,7 @@ export default async function CategoriesPage({ params }: CategoriesPageProps) {
                       </div>
                     )}
 
-                    {transactionType.canDelete && (
+                    {canManage && transactionType.canDelete && (
                       <div className="mt-5 border-t border-zinc-200 pt-4">
                         <p className="mb-3 text-xs text-zinc-500">
                           This type has no categories and can be permanently deleted.

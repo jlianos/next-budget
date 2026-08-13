@@ -1,5 +1,5 @@
 import { setTimeout as delay } from "node:timers/promises";
-
+import "dotenv/config";
 import prisma from "@/db/prisma";
 import { generateDueRecurringTransactions } from "@/features/recurring/generation";
 
